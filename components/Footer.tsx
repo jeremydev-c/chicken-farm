@@ -9,7 +9,7 @@ export default function Footer() {
       <div className="container footer-content">
         <div className="footer-main">
           <div className="footer-brand">
-            <Egg className="brand-icon" />
+            <img src="/logo.png" alt="Tabby Premium Eggs" className="brand-image" />
             <span className="brand-title">Tabby Premium Eggs</span>
           </div>
           <p className="brand-description">
@@ -74,8 +74,11 @@ export default function Footer() {
           font-size: 1.25rem;
         }
 
-        .brand-icon {
-          stroke-width: 2.5;
+        .brand-image {
+          height: 36px;
+          width: auto;
+          object-fit: contain;
+          border-radius: 4px;
         }
 
         .brand-description {

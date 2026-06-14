@@ -34,7 +34,7 @@ export default function Navbar() {
     <header className="navbar-container">
       <div className="navbar-content glass">
         <Link href="/" className="logo">
-          <Egg className="logo-icon" />
+          <img src="/logo.png" alt="Tabby Premium Eggs" className="logo-image" />
           <span className="logo-text">Tabby Premium <span className="logo-subtext">Eggs</span></span>
         </Link>
 
@@ -126,8 +126,11 @@ export default function Navbar() {
           transform: scale(1.02);
         }
 
-        .logo-icon {
-          stroke-width: 2.5;
+        .logo-image {
+          height: 32px;
+          width: auto;
+          object-fit: contain;
+          border-radius: 4px;
         }
 
         .logo-subtext {
