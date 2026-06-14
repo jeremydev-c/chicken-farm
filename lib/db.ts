@@ -138,6 +138,11 @@ export async function writeDb(data: DatabaseSchema): Promise<boolean> {
       
       // Sync products
       const productsColl = db.collection('products');
+      try {
+        await productsColl.dropIndexes();
+      } catch (e) {
+        // Ignore if no indexes exist or cannot drop
+      }
       for (const item of data.products) {
         const { _id, ...doc } = item as any;
         await productsColl.replaceOne({ id: item.id }, doc, { upsert: true });
@@ -147,6 +152,11 @@ export async function writeDb(data: DatabaseSchema): Promise<boolean> {
       
       // Sync inventory
       const inventoryColl = db.collection('inventory');
+      try {
+        await inventoryColl.dropIndexes();
+      } catch (e) {
+        // Ignore if no indexes exist
+      }
       for (const item of data.inventory) {
         const { _id, ...doc } = item as any;
         await inventoryColl.replaceOne({ id: item.id }, doc, { upsert: true });
@@ -157,9 +167,9 @@ export async function writeDb(data: DatabaseSchema): Promise<boolean> {
       // Sync orders
       const ordersColl = db.collection('orders');
       try {
-        await ordersColl.dropIndex('orderNumber_1');
+        await ordersColl.dropIndexes();
       } catch (e) {
-        // Ignore if the index doesn't exist or has already been dropped
+        // Ignore if no indexes exist
       }
       for (const item of data.orders) {
         const { _id, ...doc } = item as any;
