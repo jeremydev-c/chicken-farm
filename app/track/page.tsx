@@ -74,7 +74,7 @@ export default function OrderTracking() {
 
   const getStatusBadgeClass = (status: Order['status']) => {
     switch (status) {
-      case 'fulfilled': return 'status-fulfilled';
+      case 'delivered': return 'status-delivered';
       case 'canceled': return 'status-canceled';
       default: return 'status-pending';
     }
@@ -82,7 +82,7 @@ export default function OrderTracking() {
 
   const formatStatus = (status: Order['status']) => {
     switch (status) {
-      case 'fulfilled': return 'Ready for Pickup / Fulfilled';
+      case 'delivered': return 'Delivered';
       case 'canceled': return 'Canceled';
       default: return 'Pending Pickup';
     }
@@ -218,7 +218,7 @@ export default function OrderTracking() {
                           <span className="step-label">Reserved</span>
                         </div>
                         
-                        <div className={`step-line ${order.status === 'fulfilled' ? 'completed' : ''}`}></div>
+                        <div className={`step-line ${order.status === 'delivered' ? 'completed' : ''}`}></div>
                         
                         {order.status === 'canceled' ? (
                           <div className="step canceled">
@@ -226,11 +226,11 @@ export default function OrderTracking() {
                             <span className="step-label">Canceled</span>
                           </div>
                         ) : (
-                          <div className={`step ${order.status === 'fulfilled' ? 'completed' : ''}`}>
+                          <div className={`step ${order.status === 'delivered' ? 'completed' : ''}`}>
                             <div className="step-circle">
-                              {order.status === 'fulfilled' ? '✓' : '2'}
+                              {order.status === 'delivered' ? '✓' : '2'}
                             </div>
-                            <span className="step-label">Ready & Fulfilled</span>
+                            <span className="step-label">Delivered</span>
                           </div>
                         )}
                       </div>
@@ -506,7 +506,7 @@ export default function OrderTracking() {
           color: var(--gold-light);
         }
 
-        .status-fulfilled {
+        .status-delivered {
           background-color: rgba(64, 145, 108, 0.15);
           color: var(--success-color);
         }

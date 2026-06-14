@@ -448,16 +448,16 @@ export async function sendNewOrderAdminAlert(order: Order) {
 }
 
 /**
- * Dispatch status update (fulfilled or canceled) notification to the customer.
+ * Dispatch status update (delivered or canceled) notification to the customer.
  */
 export async function sendOrderStatusUpdateEmail(order: Order) {
-  const isFulfilled = order.status === 'fulfilled';
+  const isDelivered = order.status === 'delivered';
   const isCanceled = order.status === 'canceled';
 
-  if (!isFulfilled && !isCanceled) return { success: false, error: 'Status is not fulfilled or canceled.' };
+  if (!isDelivered && !isCanceled) return { success: false, error: 'Status is not delivered or canceled.' };
 
-  const subject = isFulfilled 
-    ? `🚚 Your Order #${order.id} is Ready / Fulfilled!` 
+  const subject = isDelivered 
+    ? `🍳 Your Order #${order.id} is Delivered!` 
     : `❌ Update: Order #${order.id} Canceled`;
 
   const formattedPickupDate = new Date(order.pickupDate).toLocaleDateString('en-KE', {
@@ -470,22 +470,22 @@ export async function sendOrderStatusUpdateEmail(order: Order) {
   const isDelivery = order.fulfillmentType === 'delivery';
 
   let statusHtml = '';
-  if (isFulfilled) {
+  if (isDelivered) {
     statusHtml = `
-      <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #166534;">Your Order is Ready / Fulfilled!</h2>
+      <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #166534;">Your Order has been Delivered!</h2>
       <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #2e2b26;">
-        Hi <strong>${order.customerName}</strong>, great news! Your egg reservation <strong>#${order.id}</strong> has been prepared at the farm.
+        Hi <strong>${order.customerName}</strong>, great news! Your egg reservation <strong>#${order.id}</strong> has been successfully delivered and processed.
       </p>
       
       <p style="margin: 0 0 20px 0; font-size: 14.5px; line-height: 1.6; color: #5c554a; background-color: #f0fdf4; border-left: 4px solid #166534; padding: 14px; border-radius: 0 8px 8px 0;">
         ${isDelivery 
-          ? `🚚 <strong>Delivery Address:</strong> Our delivery rider is preparing or has dispatched your Grade AA trays to your location:<br><span style="display:block; margin-top: 6px; font-weight: bold; color: #2e2b26;">${order.deliveryAddress}</span>`
-          : `🏢 <strong>Farm Collection:</strong> Your trays are packed and ready for pickup at our Nanyuki depot on <strong>${formattedPickupDate}</strong>.<br><em style="font-size: 13px; color: #666; display:block; margin-top: 4px;">Please present your Reservation ID #${order.id} to the storekeeper.</em>`
+          ? `🚚 <strong>Delivery:</strong> Your order has been delivered to your specified address:<br><span style="display:block; margin-top: 6px; font-weight: bold; color: #2e2b26;">${order.deliveryAddress}</span>`
+          : `🏢 <strong>Depot Pickup:</strong> Your order has been collected from our Nanyuki depot.`
         }
       </p>
 
       <p style="margin: 0 0 25px 0; font-size: 14px; color: #5c554a;">
-        Thank you for choosing Tabby Premium Eggs! We appreciate your business and hope to see you again.
+        Your payment receipt and invoice have been attached to this email as a PDF. Thank you for choosing Tabby Premium Eggs! We appreciate your business and hope to see you again.
       </p>
     `;
   } else {
@@ -502,7 +502,7 @@ export async function sendOrderStatusUpdateEmail(order: Order) {
 
   const contentHtml = `
     ${statusHtml}
-
+ 
     <!-- Info Summary -->
     <table border="0" cellpadding="12" cellspacing="0" width="100%" style="background-color: #faf9f6; border: 1px solid #ebdcb9; border-radius: 12px; margin-bottom: 25px; font-size: 13.5px;">
       <tr>
@@ -523,13 +523,13 @@ export async function sendOrderStatusUpdateEmail(order: Order) {
       </tr>
       <tr>
         <td style="color: #827765;"><strong>Fulfillment Status:</strong></td>
-        <td style="font-weight: 800; color: ${isFulfilled ? '#166534' : '#991b1b'}; text-transform: uppercase;">${order.status}</td>
+        <td style="font-weight: 800; color: ${isDelivered ? '#166534' : '#991b1b'}; text-transform: uppercase;">${order.status}</td>
       </tr>
     </table>
   `;
 
   let attachments;
-  if (isFulfilled) {
+  if (isDelivered) {
     try {
       const pdfBuffer = await generateInvoicePdf(order);
       attachments = [

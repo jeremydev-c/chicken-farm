@@ -11,11 +11,11 @@ export async function GET() {
     const eggStock = await getEggStockSummary();
 
     const pendingOrders = db.orders.filter(o => o.status === 'pending');
-    const fulfilledOrders = db.orders.filter(o => o.status === 'fulfilled');
+    const deliveredOrders = db.orders.filter(o => o.status === 'delivered');
 
     const pendingOrdersCount = pendingOrders.length;
     const totalPendingRevenue = pendingOrders.reduce((sum, o) => sum + o.totalPrice, 0);
-    const totalFulfilledRevenue = fulfilledOrders.reduce((sum, o) => sum + o.totalPrice, 0);
+    const totalDeliveredRevenue = deliveredOrders.reduce((sum, o) => sum + o.totalPrice, 0);
 
     // Get last 5 collections sorted by date desc
     const recentCollections = [...db.inventory]
@@ -68,7 +68,7 @@ export async function GET() {
       eggStock,
       pendingOrdersCount,
       totalPendingRevenue,
-      totalFulfilledRevenue,
+      totalDeliveredRevenue,
       recentCollections,
       recentOrders,
       collectionTrend,

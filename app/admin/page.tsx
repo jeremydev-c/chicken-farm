@@ -157,7 +157,7 @@ export default function AdminDashboard() {
     eggStock,
     pendingOrdersCount,
     totalPendingRevenue,
-    totalFulfilledRevenue,
+    totalDeliveredRevenue,
     recentOrders,
     collectionTrend,
     scheduleToday = [],
@@ -285,7 +285,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="card-bottom-info">
-            <span>Completed Earnings: KES {totalFulfilledRevenue.toLocaleString()}</span>
+            <span>Completed Earnings: KES {totalDeliveredRevenue.toLocaleString()}</span>
           </div>
         </div>
       </div>
@@ -339,7 +339,7 @@ export default function AdminDashboard() {
                   {order.fulfillmentType === 'delivery' && (
                     <a href={mapsLink(order)} target="_blank" rel="noopener noreferrer" className="contact-btn maps" title="Open in Google Maps" aria-label="Directions"><MapPin size={14} /></a>
                   )}
-                  <button onClick={() => handleUpdateOrderStatus(order.id, 'fulfilled')} className="action-btn fulfill-btn" title="Mark as done"><Check size={14} /> Done</button>
+                  <button onClick={() => handleUpdateOrderStatus(order.id, 'delivered')} className="action-btn fulfill-btn" title="Mark as Delivered"><Check size={14} /> Deliver</button>
                 </div>
               </div>
             ))}
@@ -484,11 +484,11 @@ export default function AdminDashboard() {
                     {order.status === 'pending' ? (
                       <>
                         <button 
-                          onClick={() => handleUpdateOrderStatus(order.id, 'fulfilled')}
+                          onClick={() => handleUpdateOrderStatus(order.id, 'delivered')}
                           className="action-btn fulfill-btn" 
-                          title="Mark as Fulfilled (Paid & Picked up)"
+                          title="Mark as Delivered & Paid"
                         >
-                          <Check size={14} /> Fulfill
+                          <Check size={14} /> Deliver
                         </button>
                         <button 
                           onClick={() => handleUpdateOrderStatus(order.id, 'canceled')}
@@ -1042,7 +1042,7 @@ export default function AdminDashboard() {
           text-transform: uppercase;
         }
 
-        .status-pill.fulfilled {
+        .status-pill.delivered {
           background-color: rgba(64, 145, 108, 0.15);
           color: var(--success-color);
         }

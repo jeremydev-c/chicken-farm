@@ -11,7 +11,7 @@ export default function AdminOrders() {
   const [error, setError] = useState<string | null>(null);
 
   // Search & Filter State
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'fulfilled' | 'canceled'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'delivered' | 'canceled'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [dueTodayOnly, setDueTodayOnly] = useState(false);
   const todayStr = new Date().toLocaleDateString('en-CA');
@@ -233,7 +233,7 @@ export default function AdminOrders() {
 
   const getStatusBadgeClass = (status: Order['status']) => {
     switch (status) {
-      case 'fulfilled': return 'status-fulfilled';
+      case 'delivered': return 'status-delivered';
       case 'canceled': return 'status-canceled';
       default: return 'status-pending';
     }
@@ -258,7 +258,7 @@ export default function AdminOrders() {
           </div>
 
           <div className="status-selector">
-            {(['all', 'pending', 'fulfilled', 'canceled'] as const).map(status => (
+            {(['all', 'pending', 'delivered', 'canceled'] as const).map(status => (
               <button 
                 key={status}
                 onClick={() => setFilterStatus(status)}
@@ -572,11 +572,11 @@ export default function AdminOrders() {
                     {order.status === 'pending' && (
                       <>
                         <button 
-                          onClick={() => handleUpdateStatus(order.id, 'fulfilled')}
+                          onClick={() => handleUpdateStatus(order.id, 'delivered')}
                           className="btn btn-action fulfill"
                           style={{ marginLeft: 'auto' }}
                         >
-                          <Check size={14} /> Fulfill & Paid
+                          <Check size={14} /> Deliver & Paid
                         </button>
                         <button 
                           onClick={() => handleUpdateStatus(order.id, 'canceled')}
@@ -825,7 +825,7 @@ export default function AdminOrders() {
           color: var(--gold-light);
         }
 
-        .status-fulfilled {
+        .status-delivered {
           background-color: rgba(64, 145, 108, 0.15);
           color: var(--success-color);
         }

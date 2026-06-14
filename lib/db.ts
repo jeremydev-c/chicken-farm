@@ -44,7 +44,7 @@ export interface Order {
   totalPrice: number;
   orderDate: string; // ISO string
   pickupDate: string; // YYYY-MM-DD (the scheduled delivery OR pickup date)
-  status: 'pending' | 'fulfilled' | 'canceled';
+  status: 'pending' | 'delivered' | 'canceled';
   notes: string;
   paymentMethod?: PaymentMethod;
   paymentStatus?: PaymentStatus;

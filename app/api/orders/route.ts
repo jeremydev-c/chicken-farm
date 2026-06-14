@@ -126,8 +126,8 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { id, status } = body;
 
-    if (!id || !status || !['pending', 'fulfilled', 'canceled'].includes(status)) {
-      return NextResponse.json({ error: 'ID and valid Status (pending, fulfilled, canceled) are required' }, { status: 400 });
+    if (!id || !status || !['pending', 'delivered', 'canceled'].includes(status)) {
+      return NextResponse.json({ error: 'ID and valid Status (pending, delivered, canceled) are required' }, { status: 400 });
     }
 
     const db = await readDb();
@@ -138,15 +138,15 @@ export async function PUT(request: Request) {
     }
 
     db.orders[orderIndex].status = status as any;
-    if (status === 'fulfilled') {
+    if (status === 'delivered') {
       db.orders[orderIndex].paymentStatus = 'paid';
     }
     const success = await writeDb(db);
 
     if (success) {
       const updatedOrder = db.orders[orderIndex];
-      // Send notification email to the customer on fulfillment or cancellation
-      if (updatedOrder.status === 'fulfilled' || updatedOrder.status === 'canceled') {
+      // Send notification email to the customer on delivery or cancellation
+      if (updatedOrder.status === 'delivered' || updatedOrder.status === 'canceled') {
         sendOrderStatusUpdateEmail(updatedOrder).catch((err) =>
           console.error('Error sending status update email:', err)
         );
