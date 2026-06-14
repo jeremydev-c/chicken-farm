@@ -479,6 +479,21 @@ export default function AdminInventory() {
             grid-template-columns: 1fr;
           }
         }
+
+        @media (max-width: 576px) {
+          .form-card, 
+          .list-card {
+            padding: 1rem;
+          }
+          .logs-table th, 
+          .logs-table td {
+            padding: 0.5rem 0.6rem;
+            font-size: 0.8rem;
+          }
+          .size-label {
+            font-size: 0.75rem;
+          }
+        }
       `}</style>
     </div>
   );

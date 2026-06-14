@@ -412,7 +412,9 @@ export default function AdminLayout({
 
           .admin-content-area {
             max-width: 100%;
-            padding: 1.5rem;
+            padding: 1.5rem 1rem;
+            min-height: calc(100vh - 55px);
+            overflow-y: visible;
           }
 
           .admin-content-header {

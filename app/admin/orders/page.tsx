@@ -959,9 +959,50 @@ export default function AdminOrders() {
           .controls-row {
             flex-direction: column;
             align-items: stretch;
+            gap: 1rem;
+          }
+          .search-filters {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.75rem;
+            padding: 0.75rem;
+          }
+          .status-selector {
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 0.35rem;
+          }
+          .status-filter-btn {
+            flex-grow: 1;
+            text-align: center;
+            padding: 0.45rem 0.5rem;
+            font-size: 0.75rem;
           }
           .add-reservation-btn {
             width: 100%;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .order-item-card .order-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+          }
+          .right-badge {
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            align-self: stretch;
+            justify-content: flex-start;
+            gap: 0.35rem;
+          }
+          .order-body {
+            padding: 1rem;
+          }
+          .manual-form-card {
+            padding: 1rem;
           }
         }
       `}</style>
