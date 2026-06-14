@@ -20,6 +20,36 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [resetting, setResetting] = useState(false);
+
+  const handleResetDatabase = async (clearProducts: boolean) => {
+    const confirmMsg = clearProducts
+      ? "WARNING: This will delete ALL orders, inventory logs, AND all catalog products (catalog will be completely empty). Are you absolutely sure?"
+      : "Are you sure you want to clean the entire database? This will clear all orders and inventory logs, resetting the admin dashboard stats to 0, but preserving the default egg tray catalog items.";
+    
+    if (!confirm(confirmMsg)) return;
+
+    setResetting(true);
+    try {
+      const res = await fetch('/api/admin/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clearProducts })
+      });
+      if (res.ok) {
+        const result = await res.json();
+        alert(`Database clean completed! Local: success. MongoDB: ${result.mongoReset}`);
+        loadDashboardData();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(`Failed to reset database: ${errData.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      alert('Network error. Failed to execute database reset.');
+    } finally {
+      setResetting(false);
+    }
+  };
 
   const loadDashboardData = async () => {
     try {
@@ -403,6 +433,44 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+      </div>
+
+      {/* Danger Zone */}
+      <div className="grid-card glass danger-zone-card">
+        <div className="card-header-row danger-header-row">
+          <div>
+            <h3 className="danger-title"><AlertTriangle size={18} className="inline-icon" /> Danger Zone</h3>
+            <span className="card-header-sub">Administrative system reset tools</span>
+          </div>
+        </div>
+        <div className="danger-actions">
+          <div className="danger-action-item">
+            <div className="danger-action-info">
+              <strong>Clean Orders & Inventory (Default Products Preserved)</strong>
+              <p>Clears all order records, active commitments, and inventory collection logs back to 0. Keeps default products in the shop catalog.</p>
+            </div>
+            <button 
+              onClick={() => handleResetDatabase(false)} 
+              disabled={resetting} 
+              className="btn btn-danger"
+            >
+              {resetting ? 'Cleaning...' : 'Clean Database'}
+            </button>
+          </div>
+          <div className="danger-action-item border-top-danger">
+            <div className="danger-action-info">
+              <strong>Clean Entire Database (Absolute Zero)</strong>
+              <p>Wipes out all collections completely: orders, inventory logs, AND all catalog products. The dashboard and shop will read absolute 0.</p>
+            </div>
+            <button 
+              onClick={() => handleResetDatabase(true)} 
+              disabled={resetting} 
+              className="btn btn-danger-heavy"
+            >
+              {resetting ? 'Wiping...' : 'Wipe Everything'}
+            </button>
+          </div>
+        </div>
       </div>
 
       <style jsx>{`
@@ -964,6 +1032,84 @@ export default function AdminDashboard() {
         .mb-delivery { background: rgba(var(--accent-rgb),0.15); color: var(--accent-dark); }
         .mb-pickup { background: rgba(var(--primary-rgb),0.1); color: var(--primary-color); }
         .mb-paid { background: rgba(64,145,108,0.15); color: var(--success-color); }
+
+        .danger-zone-card {
+          border: 1px solid rgba(217, 4, 41, 0.2);
+          background-color: rgba(217, 4, 41, 0.02);
+          margin-top: 1rem;
+        }
+        .danger-header-row {
+          border-bottom: 1px solid rgba(217, 4, 41, 0.15);
+          margin-bottom: 1.5rem;
+        }
+        .danger-title {
+          color: var(--error-color) !important;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .danger-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+        .danger-action-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 2rem;
+          flex-wrap: wrap;
+        }
+        .border-top-danger {
+          border-top: 1px solid rgba(217, 4, 41, 0.15);
+          padding-top: 1.5rem;
+        }
+        .danger-action-info {
+          flex: 1 1 300px;
+        }
+        .danger-action-info strong {
+          display: block;
+          font-size: 0.95rem;
+          color: var(--fg-color);
+          margin-bottom: 0.25rem;
+        }
+        .danger-action-info p {
+          font-size: 0.82rem;
+          color: var(--fg-muted);
+          line-height: 1.4;
+        }
+        .btn-danger {
+          background-color: transparent;
+          color: var(--error-color);
+          border: 1px solid var(--error-color);
+          padding: 0.6rem 1.25rem;
+          font-weight: 700;
+          border-radius: var(--radius-sm);
+          cursor: pointer;
+          transition: all var(--transition-fast);
+        }
+        .btn-danger:hover:not(:disabled) {
+          background-color: var(--error-color);
+          color: #ffffff;
+        }
+        .btn-danger-heavy {
+          background-color: var(--error-color);
+          color: #ffffff;
+          border: 1px solid var(--error-color);
+          padding: 0.6rem 1.25rem;
+          font-weight: 700;
+          border-radius: var(--radius-sm);
+          cursor: pointer;
+          transition: all var(--transition-fast);
+        }
+        .btn-danger-heavy:hover:not(:disabled) {
+          background-color: #bd0320;
+          border-color: #bd0320;
+        }
+        .btn-danger:disabled, .btn-danger-heavy:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
 
         @media (max-width: 992px) {
           .dashboard-grid {
