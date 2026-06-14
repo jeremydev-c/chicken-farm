@@ -558,22 +558,35 @@ export default function AdminOrders() {
                   </div>
 
                   {/* Actions buttons */}
-                  {order.status === 'pending' && (
-                    <div className="card-actions">
-                      <button 
-                        onClick={() => handleUpdateStatus(order.id, 'fulfilled')}
-                        className="btn btn-action fulfill"
-                      >
-                        <Check size={14} /> Fulfill & Paid
-                      </button>
-                      <button 
-                        onClick={() => handleUpdateStatus(order.id, 'canceled')}
-                        className="btn btn-action cancel"
-                      >
-                        <X size={14} /> Cancel
-                      </button>
-                    </div>
-                  )}
+                  <div className="card-actions">
+                    <a
+                      href={`/api/orders/invoice?id=${order.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-action invoice"
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <Download size={14} /> Download Invoice
+                    </a>
+
+                    {order.status === 'pending' && (
+                      <>
+                        <button 
+                          onClick={() => handleUpdateStatus(order.id, 'fulfilled')}
+                          className="btn btn-action fulfill"
+                          style={{ marginLeft: 'auto' }}
+                        >
+                          <Check size={14} /> Fulfill & Paid
+                        </button>
+                        <button 
+                          onClick={() => handleUpdateStatus(order.id, 'canceled')}
+                          className="btn btn-action cancel"
+                        >
+                          <X size={14} /> Cancel
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -962,6 +975,17 @@ export default function AdminOrders() {
           background-color: var(--error-color);
           color: #ffffff;
           border-color: var(--error-color);
+        }
+
+        .btn-action.invoice {
+          background-color: var(--bg-card-solid);
+          color: var(--fg-color);
+          border: 1px solid var(--border-color);
+        }
+
+        .btn-action.invoice:hover {
+          background-color: rgba(var(--primary-rgb), 0.08);
+          border-color: var(--primary-color);
         }
 
         @keyframes slideDown {

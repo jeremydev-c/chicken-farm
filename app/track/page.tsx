@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Order } from '@/lib/db';
-import { Search, Calendar, User, Phone, Mail, Clock, CheckCircle, XCircle, AlertCircle, Truck, Store, MapPin } from 'lucide-react';
+import { Search, Calendar, User, Phone, Mail, Clock, CheckCircle, XCircle, AlertCircle, Truck, Store, MapPin, Download } from 'lucide-react';
 
 export default function OrderTracking() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -280,6 +280,18 @@ export default function OrderTracking() {
                             ? '* Payment received online via Paystack.'
                             : '* Payment is completed on pickup or delivery (via M-Pesa or Cash).'}
                         </span>
+
+                        <div className="invoice-download-wrapper" style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end' }}>
+                          <a 
+                            href={`/api/orders/invoice?id=${order.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-secondary"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}
+                          >
+                            <Download size={14} /> Download PDF Invoice
+                          </a>
+                        </div>
                       </div>
                     </div>
                   </div>

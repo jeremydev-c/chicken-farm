@@ -1,6 +1,201 @@
 {
-  "inventory": [],
-  "orders": [],
+  "inventory": [
+    {
+      "id": "inv_1781451982654",
+      "date": "2026-06-14",
+      "count": 1000056,
+      "type": "chicken",
+      "size": "mixed",
+      "notes": ""
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord_1781452042167",
+      "customerName": "jeremy nduati",
+      "customerEmail": "nduatijeremy7@gmail.com",
+      "customerPhone": "0710517091",
+      "items": [
+        {
+          "productId": "prod_eggs_30",
+          "name": "Standard Tray (30 eggs)",
+          "quantity": 11,
+          "price": 450
+        }
+      ],
+      "totalPrice": 4950,
+      "orderDate": "2026-06-14T15:47:22.167Z",
+      "pickupDate": "2026-06-16",
+      "status": "fulfilled",
+      "notes": "hi",
+      "paymentMethod": "paystack",
+      "paymentStatus": "paid",
+      "fulfillmentType": "delivery",
+      "deliveryAddress": "Gakawa ward, Kieni East, Nyeri, 10400, Kenya",
+      "deliveryLat": -0.006601,
+      "deliveryLng": 37.069028,
+      "paymentReference": "tabby_ord_1781452042167_1781452042280",
+      "paidAt": "2026-06-14T15:47:30.000Z"
+    },
+    {
+      "id": "ord_1781452202390",
+      "customerName": "jeremy nduati",
+      "customerEmail": "nduatijeremy7@gmail.com",
+      "customerPhone": "0710517091",
+      "items": [
+        {
+          "productId": "prod_eggs_30",
+          "name": "Standard Tray (30 eggs)",
+          "quantity": 12,
+          "price": 450
+        }
+      ],
+      "totalPrice": 5400,
+      "orderDate": "2026-06-14T15:50:02.390Z",
+      "pickupDate": "2026-06-16",
+      "status": "fulfilled",
+      "notes": "hi ",
+      "paymentMethod": "paystack",
+      "paymentStatus": "paid",
+      "fulfillmentType": "delivery",
+      "deliveryAddress": "Gakawa ward, Kieni East, Nyeri, 10400, Kenya",
+      "deliveryLat": -0.006601,
+      "deliveryLng": 37.069028,
+      "paymentReference": "tabby_ord_1781452202390_1781452202479",
+      "paidAt": "2026-06-14T15:50:10.000Z"
+    },
+    {
+      "id": "ord_1781452624035",
+      "customerName": "jeremy nduati",
+      "customerEmail": "nduatijeremy7@gmail.com",
+      "customerPhone": "0710517091",
+      "items": [
+        {
+          "productId": "prod_eggs_60",
+          "name": "Large Tray (60 eggs)",
+          "quantity": 6,
+          "price": 850
+        }
+      ],
+      "totalPrice": 5100,
+      "orderDate": "2026-06-14T15:57:04.035Z",
+      "pickupDate": "2026-06-16",
+      "status": "fulfilled",
+      "notes": "hi",
+      "paymentMethod": "on_pickup",
+      "paymentStatus": "unpaid",
+      "fulfillmentType": "delivery",
+      "deliveryAddress": "Gakawa ward, Kieni East, Nyeri, 10400, Kenya",
+      "deliveryLat": -0.006601,
+      "deliveryLng": 37.069028
+    },
+    {
+      "id": "ord_1781453034796",
+      "customerName": "jeremy nduati",
+      "customerEmail": "nduatijeremy7@gmail.com",
+      "customerPhone": "0710517091",
+      "items": [
+        {
+          "productId": "prod_eggs_30",
+          "name": "Standard Tray (30 eggs)",
+          "quantity": 20,
+          "price": 450
+        },
+        {
+          "productId": "prod_eggs_60",
+          "name": "Large Tray (60 eggs)",
+          "quantity": 16,
+          "price": 850
+        }
+      ],
+      "totalPrice": 22600,
+      "orderDate": "2026-06-14T16:03:54.796Z",
+      "pickupDate": "2026-06-16",
+      "status": "fulfilled",
+      "notes": "hi",
+      "paymentMethod": "paystack",
+      "paymentStatus": "paid",
+      "fulfillmentType": "delivery",
+      "deliveryAddress": "Gakawa ward, Kieni East, Nyeri, 10400, Kenya",
+      "deliveryLat": -0.006601,
+      "deliveryLng": 37.069028,
+      "paymentReference": "tabby_ord_1781453034796_1781453034875",
+      "paidAt": "2026-06-14T16:04:03.000Z"
+    },
+    {
+      "id": "ord_1781453820232",
+      "customerName": "jeremy nduati",
+      "customerEmail": "nduatijeremy7@gmail.com",
+      "customerPhone": "0710517091",
+      "items": [
+        {
+          "productId": "prod_eggs_30",
+          "name": "Standard Tray (30 eggs)",
+          "quantity": 10,
+          "price": 450
+        }
+      ],
+      "totalPrice": 4500,
+      "orderDate": "2026-06-14T16:17:00.233Z",
+      "pickupDate": "2026-06-17",
+      "status": "fulfilled",
+      "notes": "hi",
+      "paymentMethod": "paystack",
+      "paymentStatus": "paid",
+      "fulfillmentType": "delivery",
+      "deliveryAddress": "Gakawa ward, Kieni East, Nyeri, 10400, Kenya",
+      "deliveryLat": -0.006601,
+      "deliveryLng": 37.069028,
+      "paymentReference": "tabby_ord_1781453820232_1781453820319",
+      "paidAt": "2026-06-14T16:17:12.000Z"
+    },
+    {
+      "id": "ord_1781453929994",
+      "customerName": "jeremy nduati",
+      "customerEmail": "nduatijeremy7@gmail.com",
+      "customerPhone": "0710517091",
+      "items": [
+        {
+          "productId": "prod_eggs_30",
+          "name": "Standard Tray (30 eggs)",
+          "quantity": 3,
+          "price": 450
+        }
+      ],
+      "totalPrice": 1350,
+      "orderDate": "2026-06-14T16:18:49.994Z",
+      "pickupDate": "2026-06-17",
+      "status": "fulfilled",
+      "notes": "",
+      "paymentMethod": "on_pickup",
+      "paymentStatus": "unpaid",
+      "fulfillmentType": "pickup",
+      "deliveryAddress": ""
+    },
+    {
+      "id": "ord_1781454215831",
+      "customerName": "jeremy nduati",
+      "customerEmail": "nduatijeremy7@gmail.com",
+      "customerPhone": "0710517091",
+      "items": [
+        {
+          "productId": "prod_eggs_30",
+          "name": "Standard Tray (30 eggs)",
+          "quantity": 1,
+          "price": 450
+        }
+      ],
+      "totalPrice": 450,
+      "orderDate": "2026-06-14T16:23:35.831Z",
+      "pickupDate": "2026-06-16",
+      "status": "fulfilled",
+      "notes": "hi",
+      "paymentMethod": "on_pickup",
+      "paymentStatus": "unpaid",
+      "fulfillmentType": "pickup",
+      "deliveryAddress": ""
+    }
+  ],
   "products": [
     {
       "id": "prod_eggs_30",

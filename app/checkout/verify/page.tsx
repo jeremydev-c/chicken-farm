@@ -47,7 +47,9 @@ export default function PaymentVerifyPage() {
   };
 
   const downloadReceipt = () => {
-    window.print();
+    if (order) {
+      window.open(`/api/orders/invoice?id=${order.id}`, '_blank');
+    }
   };
 
   const formatDateTime = (iso?: string) => {
@@ -239,7 +241,7 @@ export default function PaymentVerifyPage() {
 
                 <div className="verify-actions">
                   <button type="button" className="btn btn-primary" onClick={downloadReceipt}>
-                    <Download size={16} /> Print Receipt
+                    <Download size={16} /> Download PDF Invoice
                   </button>
                   <Link href="/track" className="btn btn-secondary">
                     Track Status
