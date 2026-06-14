@@ -156,6 +156,11 @@ export async function writeDb(data: DatabaseSchema): Promise<boolean> {
       
       // Sync orders
       const ordersColl = db.collection('orders');
+      try {
+        await ordersColl.dropIndex('orderNumber_1');
+      } catch (e) {
+        // Ignore if the index doesn't exist or has already been dropped
+      }
       for (const item of data.orders) {
         const { _id, ...doc } = item as any;
         if (doc.customerPhone) {
