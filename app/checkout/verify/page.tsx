@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { CheckCircle, XCircle, Loader2, Copy, Check, Download } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, Copy, Check, Download, CreditCard, Store, Truck, Map, ChevronRight } from 'lucide-react';
 
 type VerifyState = 'loading' | 'success' | 'failed' | 'error';
 
@@ -116,17 +116,46 @@ export default function PaymentVerifyPage() {
 
             {state === 'success' && (
               <>
-                <CheckCircle className="verify-icon success" size={72} />
-                <h2>Payment Successful!</h2>
+                <div className="success-header-animation">
+                  <CheckCircle className="verify-icon success animate-bounce-subtle" size={80} />
+                </div>
+                <h2 style={{ fontSize: '2rem', color: 'var(--success-color)', margin: '0.2rem 0' }}>Payment Confirmed!</h2>
                 <p className="verify-text">
-                  Thank you{order ? `, ${order.customerName}` : ''}. Your
-                  payment has been confirmed and your trays are reserved.
+                  Thank you{order ? `, ${order.customerName}` : ''}! Your
+                  payment has been successfully verified, and your Grade AA fresh egg trays are reserved.
                 </p>
 
                 {order && (
                   <>
+                    {/* Visual Progress Timeline */}
+                    <div className="fulfillment-timeline">
+                      <div className="timeline-step completed">
+                        <div className="step-icon">
+                          <CreditCard size={18} />
+                        </div>
+                        <span className="step-label">Payment Paid</span>
+                      </div>
+                      <div className="timeline-connector completed"></div>
+                      <div className="timeline-step active">
+                        <div className="step-icon">
+                          <CheckCircle size={18} />
+                        </div>
+                        <span className="step-label">Preparing Trays</span>
+                      </div>
+                      <div className="timeline-connector"></div>
+                      <div className="timeline-step">
+                        <div className="step-icon">
+                          {order.fulfillmentType === 'delivery' ? <Truck size={18} /> : <Store size={18} />}
+                        </div>
+                        <span className="step-label">
+                          {order.fulfillmentType === 'delivery' ? 'Out for Delivery' : 'Ready for Pickup'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Reservation ID Box */}
                     <div className="save-id-callout">
-                      <span className="save-id-label">Save your Reservation ID</span>
+                      <span className="save-id-label">Your Reservation ID</span>
                       <div className="save-id-row">
                         <span className="save-id-value">{order.id}</span>
                         <button
@@ -135,43 +164,74 @@ export default function PaymentVerifyPage() {
                           onClick={copyReservationId}
                           aria-label="Copy reservation ID"
                         >
-                          {copied ? <Check size={15} /> : <Copy size={15} />}
-                          {copied ? 'Copied' : 'Copy'}
+                          {copied ? <Check size={14} /> : <Copy size={14} />}
+                          {copied ? 'Copied' : 'Copy ID'}
                         </button>
                       </div>
-                      <p className="save-id-hint">
-                        Keep this ID safe. Use it (or your email) on the{' '}
-                        <strong>Track Order</strong> page to check your reservation anytime.
+                      <p className="save-id-hint" style={{ margin: 0 }}>
+                        We have sent a confirmation email to <strong>{order.customerEmail}</strong>. You can use this ID to track your order anytime on the <Link href="/track" style={{ color: 'var(--primary-color)', fontWeight: 700 }}>Track Order</Link> page.
                       </p>
                     </div>
 
-                    <div className="verify-details">
-                      <p>
-                        <strong>Amount Paid:</strong> KES{' '}
-                        {order.totalPrice.toLocaleString()}
-                      </p>
-                      <p>
-                        <strong>Method:</strong>{' '}
-                        {order.fulfillmentType === 'delivery'
-                          ? 'Delivery within Nanyuki'
-                          : 'Pickup at Nanyuki depot'}
-                      </p>
-                      {order.fulfillmentType === 'delivery' && order.deliveryAddress && (
-                        <p>
-                          <strong>Delivery Address:</strong> {order.deliveryAddress}
+                    {/* Depot Directions / Shipping Address Block */}
+                    {order.fulfillmentType === 'delivery' ? (
+                      <div className="fulfillment-info-card delivery">
+                        <div className="info-card-header">
+                          <Truck size={18} className="info-card-icon" />
+                          <h3>Delivery Details</h3>
+                        </div>
+                        <p className="info-card-body">
+                          📍 <strong>Address:</strong> {order.deliveryAddress || 'Nanyuki Town'}<br />
+                          📅 <strong>Target Date:</strong> {order.pickupDate}
                         </p>
-                      )}
-                      <p>
-                        <strong>
-                          {order.fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup'} Date:
-                        </strong>{' '}
-                        {order.pickupDate}
-                      </p>
+                      </div>
+                    ) : (
+                      <div className="fulfillment-info-card pickup">
+                        <div className="info-card-header">
+                          <Store size={18} className="info-card-icon" />
+                          <h3>Farm Depot Pickup</h3>
+                        </div>
+                        <p className="info-card-body">
+                          🏢 <strong>Location:</strong> Nanyuki depot, Nanyuki Town<br />
+                          📅 <strong>Pickup Date:</strong> {order.pickupDate}<br />
+                          ⏰ <strong>Hours:</strong> Daily 8:00 AM – 7:00 PM
+                        </p>
+                        <a 
+                          href="https://maps.google.com/?q=-0.01639,37.07222" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="directions-link"
+                        >
+                          <Map size={14} /> Get Directions on Google Maps
+                        </a>
+                      </div>
+                    )}
+
+                    {/* On-Screen Itemized Receipt Breakdown */}
+                    <div className="receipt-summary-card">
+                      <h3 className="summary-title">Order Summary</h3>
+                      <div className="itemized-lines">
+                        {(order.items || []).map((item, idx) => (
+                          <div className="item-line" key={idx}>
+                            <div className="item-details">
+                              <span className="item-name">{item.name}</span>
+                              <span className="item-qty">Quantity: {item.quantity}</span>
+                            </div>
+                            <span className="item-subtotal">
+                              KES {(item.price * item.quantity).toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="summary-total-row">
+                        <span>Total Paid</span>
+                        <span className="grand-total">KES {order.totalPrice.toLocaleString()}</span>
+                      </div>
                       {order.paymentReference && (
-                        <p>
-                          <strong>Payment Ref:</strong>{' '}
-                          <span className="mono">{order.paymentReference}</span>
-                        </p>
+                        <div className="payment-ref-row">
+                          <span>Paystack Ref:</span>
+                          <span className="ref-val">{order.paymentReference}</span>
+                        </div>
                       )}
                     </div>
                   </>
@@ -179,10 +239,10 @@ export default function PaymentVerifyPage() {
 
                 <div className="verify-actions">
                   <button type="button" className="btn btn-primary" onClick={downloadReceipt}>
-                    <Download size={16} /> Download Receipt
+                    <Download size={16} /> Print Receipt
                   </button>
                   <Link href="/track" className="btn btn-secondary">
-                    Track Reservation
+                    Track Status
                   </Link>
                 </div>
                 <Link href="/shop" className="continue-link">
@@ -326,6 +386,190 @@ export default function PaymentVerifyPage() {
           align-items: center;
           gap: 1.25rem;
         }
+
+        /* Timeline styling */
+        .fulfillment-timeline {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          margin: 0.5rem 0 1.5rem 0;
+          padding: 0 0.5rem;
+        }
+        .timeline-step {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.4rem;
+          flex: 1;
+        }
+        .timeline-step .step-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: rgba(var(--primary-rgb), 0.05);
+          color: var(--fg-muted);
+          border: 2px solid var(--border-color);
+          transition: all 0.3s ease;
+        }
+        .timeline-step.completed .step-icon {
+          background: #def7ec;
+          color: #03543f;
+          border-color: #31c48d;
+        }
+        .timeline-step.active .step-icon {
+          background: rgba(var(--primary-rgb), 0.15);
+          color: var(--primary-color);
+          border-color: var(--primary-color);
+          box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.1);
+        }
+        .timeline-step .step-label {
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: var(--fg-muted);
+          text-align: center;
+        }
+        .timeline-step.active .step-label,
+        .timeline-step.completed .step-label {
+          color: var(--fg-color);
+        }
+        .timeline-connector {
+          flex: 0.8;
+          height: 3px;
+          background: var(--border-color);
+          margin-bottom: 1.25rem;
+        }
+        .timeline-connector.completed {
+          background: #31c48d;
+        }
+
+        /* Fulfillment Info Card */
+        .fulfillment-info-card {
+          width: 100%;
+          background: rgba(var(--primary-rgb), 0.02);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          padding: 1.25rem;
+          text-align: left;
+        }
+        .info-card-header {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.75rem;
+          color: var(--primary-color);
+        }
+        .info-card-header h3 {
+          margin: 0;
+          font-size: 0.95rem;
+          font-weight: 700;
+          font-family: var(--font-display);
+        }
+        .info-card-body {
+          margin: 0;
+          font-size: 0.88rem;
+          line-height: 1.6;
+          color: var(--fg-color);
+        }
+        .directions-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          margin-top: 0.85rem;
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: var(--primary-color);
+          text-decoration: none;
+          transition: color 0.2s ease;
+        }
+        .directions-link:hover {
+          color: var(--primary-light);
+        }
+
+        /* Itemized Receipt Summary Card */
+        .receipt-summary-card {
+          width: 100%;
+          background: rgba(var(--primary-rgb), 0.02);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          padding: 1.25rem;
+          text-align: left;
+          display: flex;
+          flex-direction: column;
+          gap: 0.85rem;
+        }
+        .summary-title {
+          margin: 0;
+          font-size: 0.95rem;
+          font-weight: 700;
+          font-family: var(--font-display);
+          color: var(--fg-color);
+          border-bottom: 1px solid var(--border-color);
+          padding-bottom: 0.5rem;
+        }
+        .itemized-lines {
+          display: flex;
+          flex-direction: column;
+          gap: 0.65rem;
+        }
+        .item-line {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 0.88rem;
+        }
+        .item-details {
+          display: flex;
+          flex-direction: column;
+        }
+        .item-name {
+          font-weight: 600;
+          color: var(--fg-color);
+        }
+        .item-qty {
+          font-size: 0.78rem;
+          color: var(--fg-muted);
+        }
+        .item-subtotal {
+          font-weight: 700;
+          color: var(--fg-color);
+        }
+        .summary-total-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-top: 2px solid var(--border-color);
+          padding-top: 0.75rem;
+          font-weight: 700;
+          font-size: 1rem;
+        }
+        .summary-total-row .grand-total {
+          color: var(--primary-color);
+          font-size: 1.15rem;
+        }
+        .payment-ref-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 0.75rem;
+          color: var(--fg-muted);
+          border-top: 1px dashed var(--border-color);
+          padding-top: 0.5rem;
+        }
+        .payment-ref-row .ref-val {
+          font-family: monospace;
+        }
+        .animate-bounce-subtle {
+          animation: bounce-subtle 2s infinite ease-in-out;
+        }
+        @keyframes bounce-subtle {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+
         .verify-icon.success {
           color: var(--success-color);
         }

@@ -11,8 +11,25 @@ interface SendEmailParams {
 }
 
 /**
+ * Normalizes a Kenyan phone number and returns a pre-populated WhatsApp chat URL.
+ */
+function getWhatsAppLink(phone: string, orderId: string, name: string): string {
+  let clean = phone.replace(/[^0-9]/g, '');
+  // Normalize Kenyan local formatting to international prefix +254
+  if (clean.startsWith('0')) {
+    clean = '254' + clean.substring(1);
+  } else if (clean.startsWith('7') && clean.length === 9) {
+    clean = '254' + clean;
+  } else if (clean.startsWith('1') && clean.length === 9) { // support new +254 1xx prefix
+    clean = '254' + clean;
+  }
+  
+  const text = `Hello ${name}, this is Tabby Premium Eggs. We have received your reservation #${orderId} and are currently preparing your trays.`;
+  return `https://wa.me/${clean}?text=${encodeURIComponent(text)}`;
+}
+
+/**
  * Generic helper to send emails via Resend's REST API using native fetch.
- * This keeps the application dependencies clean and avoids version conflicts.
  */
 export async function sendEmail({ to, subject, html }: SendEmailParams) {
   if (!RESEND_API_KEY) {
@@ -64,20 +81,26 @@ function getEmailWrapper(contentHtml: string): string {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Tabby Premium Eggs</title>
       </head>
-      <body style="margin: 0; padding: 0; background-color: #f7f6f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2d2d2d; -webkit-font-smoothing: antialiased;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f7f6f0; padding: 20px 0;">
+      <body style="margin: 0; padding: 0; background-color: #f5f4ef; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2e2b26; -webkit-font-smoothing: antialiased;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f5f4ef; padding: 30px 0;">
           <tr>
             <td align="center">
               <!-- Card Container -->
-              <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; border: 1px solid #ebdcb9; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+              <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 16px; border: 1px solid #e3decb; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.04);">
+                
+                <!-- Brand Accent Bar -->
+                <tr>
+                  <td height="6" style="background: linear-gradient(90deg, #d97706 0%, #f59e0b 50%, #d97706 100%);"></td>
+                </tr>
+
                 <!-- Header -->
                 <tr>
-                  <td align="center" style="background: linear-gradient(135deg, #fbfaf5 0%, #f5eecd 100%); padding: 30px 20px; border-bottom: 2px solid #ebdcb9;">
+                  <td align="center" style="background-color: #fcfbf9; padding: 35px 20px; border-bottom: 1px solid #ebdcb9;">
                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                       <tr>
                         <td align="center">
-                          <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #b45309; letter-spacing: -0.5px;">Tabby Premium Eggs</h1>
-                          <p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 500; color: #78350f; text-transform: uppercase; letter-spacing: 1.5px;">Grade AA Farm-Fresh • Nanyuki, Kenya</p>
+                          <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #b45309; letter-spacing: -0.5px; font-family: 'Outfit', 'Inter', sans-serif;">Tabby Premium Eggs</h1>
+                          <p style="margin: 6px 0 0 0; font-size: 11px; font-weight: 700; color: #78350f; text-transform: uppercase; letter-spacing: 2px;">Grade AA Farm-Fresh • Nanyuki, Kenya</p>
                         </td>
                       </tr>
                     </table>
@@ -86,23 +109,24 @@ function getEmailWrapper(contentHtml: string): string {
                 
                 <!-- Main Body -->
                 <tr>
-                  <td style="padding: 35px 30px; background-color: #ffffff;">
+                  <td style="padding: 40px 35px; background-color: #ffffff;">
                     ${contentHtml}
                   </td>
                 </tr>
 
                 <!-- Footer -->
                 <tr>
-                  <td style="padding: 25px 30px; background-color: #faf9f5; border-top: 1px solid #f0ead8; text-align: center;">
-                    <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600; color: #5c4d37;">Tabby Premium Eggs</p>
-                    <p style="margin: 0 0 15px 0; font-size: 12px; line-height: 1.6; color: #7c6e59;">
-                      Freshly collected Grade AA farm eggs delivered straight to your home or kitchen in Nanyuki, Kenya.<br>
-                      <strong>Phone:</strong> +254 722 237 593 | <strong>Email:</strong> orders@tabbypremiumeggs.online
+                  <td style="padding: 30px; background-color: #faf9f6; border-top: 1px solid #eee8d5; text-align: center;">
+                    <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: #4d453a;">Tabby Premium Eggs</p>
+                    <p style="margin: 0 0 20px 0; font-size: 12px; line-height: 1.6; color: #827765;">
+                      Direct-sourced Grade AA eggs with golden yolks, clean shells, and premium presentation.<br>
+                      <strong>Depot:</strong> Nanyuki, Kenya (Open Daily 8:00 AM – 7:00 PM)<br>
+                      <strong>Support Hotline:</strong> +254 722 237 593 | <strong>Email:</strong> orders@tabbypremiumeggs.online
                     </p>
                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                       <tr>
-                        <td align="center" style="padding-top: 5px;">
-                          <a href="${APP_URL}" style="font-size: 12px; font-weight: 700; color: #d97706; text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px;">Visit Online Shop</a>
+                        <td align="center">
+                          <a href="${APP_URL}" style="display: inline-block; font-size: 12px; font-weight: 700; color: #d97706; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; border: 1px solid #d97706; padding: 6px 16px; border-radius: 4px;">Visit Online Store</a>
                         </td>
                       </tr>
                     </table>
@@ -125,16 +149,16 @@ function getOrderItemsTable(items: Order['items']): string {
     .map(
       (item) => `
     <tr>
-      <td style="padding: 12px 0; border-bottom: 1px solid #f2edd8; font-size: 14px; color: #2d2d2d; font-weight: 600;">
+      <td style="padding: 14px 0; border-bottom: 1px solid #f2eedb; font-size: 14px; color: #2e2b26; font-weight: 600;">
         ${item.name}
       </td>
-      <td align="center" style="padding: 12px 0; border-bottom: 1px solid #f2edd8; font-size: 14px; color: #4d4d4d;">
+      <td align="center" style="padding: 14px 0; border-bottom: 1px solid #f2eedb; font-size: 14px; color: #5c554a;">
         ${item.quantity}
       </td>
-      <td align="right" style="padding: 12px 0; border-bottom: 1px solid #f2edd8; font-size: 14px; color: #4d4d4d;">
+      <td align="right" style="padding: 14px 0; border-bottom: 1px solid #f2eedb; font-size: 14px; color: #5c554a;">
         KES ${item.price.toLocaleString()}
       </td>
-      <td align="right" style="padding: 12px 0; border-bottom: 1px solid #f2edd8; font-size: 14px; color: #2d2d2d; font-weight: 700;">
+      <td align="right" style="padding: 14px 0; border-bottom: 1px solid #f2eedb; font-size: 14px; color: #b45309; font-weight: 700;">
         KES ${(item.price * item.quantity).toLocaleString()}
       </td>
     </tr>
@@ -143,13 +167,13 @@ function getOrderItemsTable(items: Order['items']): string {
     .join('');
 
   return `
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 20px; border-collapse: collapse;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 15px; border-collapse: collapse;">
       <thead>
         <tr>
-          <th align="left" style="padding-bottom: 8px; border-bottom: 2px solid #ebdcb9; font-size: 12px; font-weight: 700; color: #7c6e59; text-transform: uppercase; letter-spacing: 0.5px;">Product</th>
-          <th align="center" style="padding-bottom: 8px; border-bottom: 2px solid #ebdcb9; font-size: 12px; font-weight: 700; color: #7c6e59; text-transform: uppercase; letter-spacing: 0.5px;">Qty</th>
-          <th align="right" style="padding-bottom: 8px; border-bottom: 2px solid #ebdcb9; font-size: 12px; font-weight: 700; color: #7c6e59; text-transform: uppercase; letter-spacing: 0.5px;">Unit Price</th>
-          <th align="right" style="padding-bottom: 8px; border-bottom: 2px solid #ebdcb9; font-size: 12px; font-weight: 700; color: #7c6e59; text-transform: uppercase; letter-spacing: 0.5px;">Subtotal</th>
+          <th align="left" style="padding-bottom: 10px; border-bottom: 2px solid #ebdcb9; font-size: 11px; font-weight: 700; color: #827765; text-transform: uppercase; letter-spacing: 0.5px;">Product</th>
+          <th align="center" style="padding-bottom: 10px; border-bottom: 2px solid #ebdcb9; font-size: 11px; font-weight: 700; color: #827765; text-transform: uppercase; letter-spacing: 0.5px;">Qty</th>
+          <th align="right" style="padding-bottom: 10px; border-bottom: 2px solid #ebdcb9; font-size: 11px; font-weight: 700; color: #827765; text-transform: uppercase; letter-spacing: 0.5px;">Unit Price</th>
+          <th align="right" style="padding-bottom: 10px; border-bottom: 2px solid #ebdcb9; font-size: 11px; font-weight: 700; color: #827765; text-transform: uppercase; letter-spacing: 0.5px;">Subtotal</th>
         </tr>
       </thead>
       <tbody>
@@ -178,43 +202,51 @@ export async function sendOrderConfirmationEmail(order: Order) {
   });
 
   const isDelivery = order.fulfillmentType === 'delivery';
-  const paymentMethodLabel = order.paymentMethod === 'paystack' ? 'Paid Online (Paystack)' : 'Pay on Pickup/Delivery';
-  const paymentStatusLabel = order.paymentStatus === 'paid' ? 'Paid ✓' : 'Pending Payment';
+  const paymentMethodLabel = order.paymentMethod === 'paystack' ? 'Paid Online via Paystack' : 'Pay on Pickup/Delivery';
+  
+  // Custom styled badges
+  const paymentStatusBadge = order.paymentStatus === 'paid'
+    ? `<span style="background-color: #def7ec; color: #03543f; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">PAID ✓</span>`
+    : `<span style="background-color: #fef3c7; color: #92400e; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">PENDING PAYMENT</span>`;
+
+  const fulfillmentBadge = isDelivery
+    ? `<span style="background-color: #e1effe; color: #1e429f; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">DELIVERY IN NANYUKI</span>`
+    : `<span style="background-color: #edf2f7; color: #4a5568; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">PICKUP AT FARM</span>`;
 
   const contentHtml = `
-    <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; color: #b45309;">Order Reservation Confirmed!</h2>
-    <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.5; color: #4d4d4d;">
-      Hi <strong>${order.customerName}</strong>, thank you for reserving eggs with us. Your reservation is registered, and we are preparing your tray(s) for collection.
+    <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #b45309;">Order Confirmed!</h2>
+    <p style="margin: 0 0 25px 0; font-size: 15px; line-height: 1.6; color: #5c554a;">
+      Hi <strong>${order.customerName}</strong>, thank you for choosing Tabby Premium Eggs. Your reservation has been registered, and we are preparing your Grade AA trays.
     </p>
 
-    <!-- Info Block -->
-    <table border="0" cellpadding="12" cellspacing="0" width="100%" style="background-color: #faf9f5; border-radius: 8px; border: 1px solid #ebdcb9; margin-bottom: 25px;">
+    <!-- Details Box -->
+    <table border="0" cellpadding="16" cellspacing="0" width="100%" style="background-color: #faf9f6; border-radius: 12px; border: 1px solid #ebdcb9; margin-bottom: 30px;">
       <tr>
         <td>
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
-              <td width="50%" style="padding-bottom: 10px; font-size: 13px; color: #7c6e59;"><strong>Reservation ID:</strong></td>
-              <td width="50%" style="padding-bottom: 10px; font-size: 13px; color: #2d2d2d; font-family: monospace; font-weight: bold;">${order.id}</td>
+              <td width="40%" style="padding-bottom: 12px; font-size: 13px; color: #827765;"><strong>Reservation ID:</strong></td>
+              <td width="60%" style="padding-bottom: 12px; font-size: 14px; color: #2e2b26; font-family: monospace; font-weight: 700;">${order.id}</td>
             </tr>
             <tr>
-              <td width="50%" style="padding-bottom: 10px; font-size: 13px; color: #7c6e59;"><strong>Order Date:</strong></td>
-              <td width="50%" style="padding-bottom: 10px; font-size: 13px; color: #2d2d2d;">${formattedDate}</td>
+              <td style="padding-bottom: 12px; font-size: 13px; color: #827765;"><strong>Order Date:</strong></td>
+              <td style="padding-bottom: 12px; font-size: 14px; color: #2e2b26;">${formattedDate}</td>
             </tr>
             <tr>
-              <td width="50%" style="padding-bottom: 10px; font-size: 13px; color: #7c6e59;"><strong>Fulfillment Date:</strong></td>
-              <td width="50%" style="padding-bottom: 10px; font-size: 13px; color: #2d2d2d; font-weight: bold;">${formattedPickupDate}</td>
+              <td style="padding-bottom: 12px; font-size: 13px; color: #827765;"><strong>Fulfillment Date:</strong></td>
+              <td style="padding-bottom: 12px; font-size: 14px; color: #2e2b26; font-weight: 700;">${formattedPickupDate}</td>
             </tr>
             <tr>
-              <td width="50%" style="padding-bottom: 10px; font-size: 13px; color: #7c6e59;"><strong>Fulfillment Option:</strong></td>
-              <td width="50%" style="padding-bottom: 10px; font-size: 13px; color: #2d2d2d;">${isDelivery ? 'Delivery in Nanyuki' : 'Pickup at Farm'}</td>
+              <td style="padding-bottom: 12px; font-size: 13px; color: #827765;"><strong>Fulfillment Type:</strong></td>
+              <td style="padding-bottom: 12px; font-size: 13px;">${fulfillmentBadge}</td>
             </tr>
             <tr>
-              <td width="50%" style="padding-bottom: 10px; font-size: 13px; color: #7c6e59;"><strong>Payment Method:</strong></td>
-              <td width="50%" style="padding-bottom: 10px; font-size: 13px; color: #2d2d2d;">${paymentMethodLabel}</td>
+              <td style="padding-bottom: 12px; font-size: 13px; color: #827765;"><strong>Payment Method:</strong></td>
+              <td style="padding-bottom: 12px; font-size: 14px; color: #2e2b26;">${paymentMethodLabel}</td>
             </tr>
             <tr>
-              <td width="50%" style="font-size: 13px; color: #7c6e59;"><strong>Payment Status:</strong></td>
-              <td width="50%" style="font-size: 13px; color: #b45309; font-weight: bold;">${paymentStatusLabel}</td>
+              <td style="font-size: 13px; color: #827765;"><strong>Status:</strong></td>
+              <td>${paymentStatusBadge}</td>
             </tr>
           </table>
         </td>
@@ -223,39 +255,47 @@ export async function sendOrderConfirmationEmail(order: Order) {
 
     ${isDelivery ? `
       <!-- Delivery Address -->
-      <h3 style="margin: 0 0 8px 0; font-size: 14px; text-transform: uppercase; color: #7c6e59; letter-spacing: 0.5px;">Delivery Address</h3>
-      <p style="margin: 0 0 25px 0; font-size: 14px; line-height: 1.5; color: #2d2d2d; background-color: #faf9f5; border: 1px solid #ebdcb9; border-radius: 8px; padding: 12px;">
-        ${order.deliveryAddress}
-      </p>
-    ` : ''}
+      <h3 style="margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; color: #827765; letter-spacing: 1px;">Delivery Destination</h3>
+      <div style="margin: 0 0 30px 0; font-size: 14px; line-height: 1.5; color: #2e2b26; background-color: #f9f8f6; border: 1px solid #ebdcb9; border-radius: 8px; padding: 14px;">
+        📍 <strong>Address:</strong> ${order.deliveryAddress}
+      </div>
+    ` : `
+      <!-- Pickup Depot Details -->
+      <h3 style="margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; color: #827765; letter-spacing: 1px;">Depot Collection Details</h3>
+      <div style="margin: 0 0 30px 0; font-size: 14px; line-height: 1.6; color: #2e2b26; background-color: #fbfbf9; border-left: 4px solid #d97706; padding: 14px; border-radius: 0 8px 8px 0;">
+        🏢 <strong>Pickup Location:</strong> Nanyuki depot, Nanyuki Town.<br>
+        ⏰ <strong>Collection Hours:</strong> Daily 8:00 AM – 7:00 PM.<br>
+        💡 <em>Please present your Reservation ID (<strong>${order.id}</strong>) to the storekeeper during pickup.</em>
+      </div>
+    `}
 
     <!-- Order Items -->
-    <h3 style="margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase; color: #7c6e59; letter-spacing: 0.5px;">Items Summary</h3>
+    <h3 style="margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; color: #827765; letter-spacing: 1px;">Reserved Products</h3>
     ${getOrderItemsTable(order.items)}
 
     <!-- Grand Total -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 15px; border-top: 2px solid #ebdcb9; padding-top: 15px; margin-bottom: 30px;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 15px; border-top: 2px solid #ebdcb9; padding-top: 15px; margin-bottom: 35px;">
       <tr>
-        <td align="right" style="font-size: 16px; color: #4d4d4d; font-weight: 600;">Total Amount:</td>
-        <td align="right" width="150" style="font-size: 20px; color: #b45309; font-weight: 800; padding-left: 10px;">
+        <td align="right" style="font-size: 15px; color: #5c554a; font-weight: 600;">Total Amount:</td>
+        <td align="right" width="160" style="font-size: 22px; color: #b45309; font-weight: 800; padding-left: 10px;">
           KES ${order.totalPrice.toLocaleString()}
         </td>
       </tr>
     </table>
 
     ${order.notes ? `
-      <h3 style="margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; color: #7c6e59; letter-spacing: 0.5px;">Customer Note:</h3>
-      <p style="margin: 0 0 30px 0; font-size: 13px; font-style: italic; color: #555; background-color: #fcfcfc; border-left: 3px solid #ebdcb9; padding: 8px 12px;">
+      <h3 style="margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; color: #827765; letter-spacing: 1px;">Your Note:</h3>
+      <p style="margin: 0 0 35px 0; font-size: 13.5px; font-style: italic; color: #5c554a; background-color: #fafafa; border-left: 3px solid #ebdcb9; padding: 10px 14px; border-radius: 0 6px 6px 0;">
         "${order.notes}"
       </p>
     ` : ''}
 
     <!-- Action Link -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 25px 0;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 10px 0 20px 0;">
       <tr>
         <td align="center">
-          <a href="${APP_URL}/track" style="display: inline-block; background-color: #b45309; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 12px 28px; border-radius: 6px; box-shadow: 0 4px 6px rgba(180, 83, 9, 0.15); text-transform: uppercase; letter-spacing: 0.5px;">Track Order Status</a>
-          <p style="margin: 10px 0 0 0; font-size: 12px; color: #7c6e59;">Click above to track fulfillment status. Reservation ID: <strong>${order.id}</strong></p>
+          <a href="${APP_URL}/track" style="display: inline-block; background-color: #b45309; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 12px rgba(180, 83, 9, 0.2); text-transform: uppercase; letter-spacing: 1px;">Track Reservation Status</a>
+          <p style="margin: 12px 0 0 0; font-size: 12px; color: #827765;">Use your Reservation ID <strong>${order.id}</strong> on the website to view live tracking.</p>
         </td>
       </tr>
     </table>
@@ -271,92 +311,107 @@ export async function sendOrderConfirmationEmail(order: Order) {
 
 /**
  * Dispatch admin alert for a new order.
+ * Includes smart phone dialing and WhatsApp redirection links.
  */
 export async function sendNewOrderAdminAlert(order: Order) {
   const isDelivery = order.fulfillmentType === 'delivery';
-  const paymentMethodLabel = order.paymentMethod === 'paystack' ? 'Paid Online (Paystack)' : 'Pay on Pickup/Delivery';
-  const paymentStatusLabel = order.paymentStatus === 'paid' ? 'Paid ✓' : 'Unpaid (Collect Cash)';
+  const paymentMethodLabel = order.paymentMethod === 'paystack' ? 'Paystack Online' : 'Pay on Pickup/Delivery';
+  
+  const paymentStatusBadge = order.paymentStatus === 'paid'
+    ? `<span style="background-color: #def7ec; color: #03543f; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">PAID ✓</span>`
+    : `<span style="background-color: #fef3c7; color: #92400e; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">UNPAID (COLLECT CASH)</span>`;
+
+  const fulfillmentBadge = isDelivery
+    ? `<span style="background-color: #e1effe; color: #1e429f; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">DELIVERY IN NANYUKI</span>`
+    : `<span style="background-color: #edf2f7; color: #4a5568; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">PICKUP AT DEPOT</span>`;
+
+  const waLink = getWhatsAppLink(order.customerPhone, order.id, order.customerName);
 
   const contentHtml = `
-    <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; color: #b45309; border-left: 4px solid #d97706; padding-left: 10px;">🔔 New Order Received</h2>
-    <p style="margin: 0 0 20px 0; font-size: 15px; color: #4d4d4d;">
-      An order has been submitted. Prepare the inventory stock accordingly.
+    <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #b45309; border-left: 4px solid #d97706; padding-left: 12px;">🔔 New Order Received</h2>
+    <p style="margin: 0 0 25px 0; font-size: 15px; color: #5c554a;">
+      A new egg reservation has been submitted. Check details below to coordinate fulfillment.
     </p>
 
-    <!-- Customer Details -->
-    <h3 style="margin: 0 0 8px 0; font-size: 13px; text-transform: uppercase; color: #7c6e59; letter-spacing: 0.5px;">Customer Contact</h3>
-    <table border="0" cellpadding="8" cellspacing="0" width="100%" style="background-color: #faf9f5; border: 1px solid #ebdcb9; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px;">
+    <!-- Customer Contacts -->
+    <h3 style="margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; color: #827765; letter-spacing: 1px;">Customer Information</h3>
+    <table border="0" cellpadding="12" cellspacing="0" width="100%" style="background-color: #faf9f6; border: 1px solid #ebdcb9; border-radius: 12px; margin-bottom: 25px; font-size: 14px;">
       <tr>
-        <td style="color: #7c6e59; width: 120px;"><strong>Name:</strong></td>
-        <td><strong>${order.customerName}</strong></td>
+        <td style="color: #827765; width: 110px; padding-bottom: 8px;"><strong>Name:</strong></td>
+        <td style="padding-bottom: 8px;"><strong>${order.customerName}</strong></td>
       </tr>
       <tr>
-        <td style="color: #7c6e59;"><strong>Phone:</strong></td>
-        <td><a href="tel:${order.customerPhone}" style="color: #b45309; text-decoration: none;">${order.customerPhone}</a></td>
+        <td style="color: #827765; padding-bottom: 8px; vertical-align: middle;"><strong>Phone:</strong></td>
+        <td style="padding-bottom: 8px; vertical-align: middle;">
+          <a href="tel:${order.customerPhone}" style="color: #b45309; font-weight: 700; text-decoration: none; font-size: 15px;">${order.customerPhone}</a>
+          <div style="margin-top: 6px;">
+            <a href="${waLink}" style="display: inline-block; background-color: #25d366; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;">💬 Chat on WhatsApp</a>
+          </div>
+        </td>
       </tr>
       <tr>
-        <td style="color: #7c6e59;"><strong>Email:</strong></td>
+        <td style="color: #827765;"><strong>Email:</strong></td>
         <td><a href="mailto:${order.customerEmail}" style="color: #b45309; text-decoration: none;">${order.customerEmail}</a></td>
       </tr>
     </table>
 
     <!-- Order Metadata -->
-    <h3 style="margin: 0 0 8px 0; font-size: 13px; text-transform: uppercase; color: #7c6e59; letter-spacing: 0.5px;">Order Details</h3>
-    <table border="0" cellpadding="8" cellspacing="0" width="100%" style="background-color: #faf9f5; border: 1px solid #ebdcb9; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px;">
+    <h3 style="margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; color: #827765; letter-spacing: 1px;">Reservation Metadata</h3>
+    <table border="0" cellpadding="12" cellspacing="0" width="100%" style="background-color: #faf9f6; border: 1px solid #ebdcb9; border-radius: 12px; margin-bottom: 25px; font-size: 14px;">
       <tr>
-        <td style="color: #7c6e59; width: 120px;"><strong>Order ID:</strong></td>
-        <td style="font-family: monospace; font-weight: bold;">${order.id}</td>
+        <td style="color: #827765; width: 110px;"><strong>Order ID:</strong></td>
+        <td style="font-family: monospace; font-weight: 700; color: #2e2b26;">${order.id}</td>
       </tr>
       <tr>
-        <td style="color: #7c6e59;"><strong>Pickup/Delivery:</strong></td>
+        <td style="color: #827765;"><strong>Fulfill Date:</strong></td>
         <td><strong>${new Date(order.pickupDate).toLocaleDateString('en-KE')}</strong></td>
       </tr>
       <tr>
-        <td style="color: #7c6e59;"><strong>Type:</strong></td>
-        <td>${isDelivery ? 'Delivery in Nanyuki' : 'Pickup at Farm'}</td>
+        <td style="color: #827765;"><strong>Fulfillment:</strong></td>
+        <td>${fulfillmentBadge}</td>
       </tr>
       <tr>
-        <td style="color: #7c6e59;"><strong>Payment Flow:</strong></td>
+        <td style="color: #827765;"><strong>Payment:</strong></td>
         <td>${paymentMethodLabel}</td>
       </tr>
       <tr>
-        <td style="color: #7c6e59;"><strong>Payment Status:</strong></td>
-        <td style="color: #b45309; font-weight: bold;">${paymentStatusLabel}</td>
+        <td style="color: #827765;"><strong>Status:</strong></td>
+        <td>${paymentStatusBadge}</td>
       </tr>
       ${isDelivery ? `
       <tr>
-        <td style="color: #7c6e59; vertical-align: top;"><strong>Address:</strong></td>
-        <td>${order.deliveryAddress}</td>
+        <td style="color: #827765; vertical-align: top;"><strong>Address:</strong></td>
+        <td>📍 ${order.deliveryAddress}</td>
       </tr>
       ` : ''}
     </table>
 
     <!-- Order Items -->
-    <h3 style="margin: 0 0 5px 0; font-size: 13px; text-transform: uppercase; color: #7c6e59; letter-spacing: 0.5px;">Products Requested</h3>
+    <h3 style="margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; color: #827765; letter-spacing: 1px;">Requested Trays</h3>
     ${getOrderItemsTable(order.items)}
 
     <!-- Grand Total -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 15px; border-top: 2px solid #ebdcb9; padding-top: 15px; margin-bottom: 25px;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 15px; border-top: 2px solid #ebdcb9; padding-top: 15px; margin-bottom: 30px;">
       <tr>
-        <td align="right" style="font-size: 15px; color: #4d4d4d; font-weight: 600;">Total Revenue:</td>
-        <td align="right" width="150" style="font-size: 19px; color: #b45309; font-weight: 800; padding-left: 10px;">
+        <td align="right" style="font-size: 15px; color: #5c554a; font-weight: 600;">Total Revenue:</td>
+        <td align="right" width="160" style="font-size: 21px; color: #b45309; font-weight: 800; padding-left: 10px;">
           KES ${order.totalPrice.toLocaleString()}
         </td>
       </tr>
     </table>
 
     ${order.notes ? `
-      <h3 style="margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; color: #7c6e59; letter-spacing: 0.5px;">Notes from Customer:</h3>
-      <p style="margin: 0 0 25px 0; font-size: 13px; font-style: italic; color: #555; background-color: #fbfbfb; border-left: 3px solid #ebdcb9; padding: 8px 12px;">
+      <h3 style="margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; color: #827765; letter-spacing: 1px;">Customer Notes:</h3>
+      <p style="margin: 0 0 30px 0; font-size: 13.5px; font-style: italic; color: #5c554a; background-color: #fafafa; border-left: 3px solid #ebdcb9; padding: 10px 14px; border-radius: 0 6px 6px 0;">
         "${order.notes}"
       </p>
     ` : ''}
 
     <!-- Action Link -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 20px 0;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 15px 0;">
       <tr>
         <td align="center">
-          <a href="${APP_URL}/admin/orders" style="display: inline-block; background-color: #2b2b2b; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 10px 24px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Open Admin Dashboard</a>
+          <a href="${APP_URL}/admin/orders" style="display: inline-block; background-color: #2e2b26; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 12px 28px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px;">Open Admin Dashboard</a>
         </td>
       </tr>
     </table>
@@ -377,7 +432,6 @@ export async function sendOrderStatusUpdateEmail(order: Order) {
   const isFulfilled = order.status === 'fulfilled';
   const isCanceled = order.status === 'canceled';
 
-  // Do not send emails if status is pending (which is default state)
   if (!isFulfilled && !isCanceled) return { success: false, error: 'Status is not fulfilled or canceled.' };
 
   const subject = isFulfilled 
@@ -396,30 +450,30 @@ export async function sendOrderStatusUpdateEmail(order: Order) {
   let statusHtml = '';
   if (isFulfilled) {
     statusHtml = `
-      <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; color: #15803d;">Your Order is Ready / Fulfilled!</h2>
-      <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.5; color: #2d2d2d;">
-        Hi <strong>${order.customerName}</strong>, your reservation <strong>#${order.id}</strong> has been processed on our farm.
+      <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #166534;">Your Order is Ready / Fulfilled!</h2>
+      <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #2e2b26;">
+        Hi <strong>${order.customerName}</strong>, great news! Your egg reservation <strong>#${order.id}</strong> has been prepared at the farm.
       </p>
       
-      <p style="margin: 0 0 15px 0; font-size: 14.5px; line-height: 1.5; color: #4d4d4d;">
+      <p style="margin: 0 0 20px 0; font-size: 14.5px; line-height: 1.6; color: #5c554a; background-color: #f0fdf4; border-left: 4px solid #166534; padding: 14px; border-radius: 0 8px 8px 0;">
         ${isDelivery 
-          ? `Our delivery services are preparing or have dispatched your Grade AA eggs to your address: <strong>${order.deliveryAddress}</strong>.`
-          : `Your farm-fresh eggs are packaged and ready for collection at our farm in Nanyuki. Please present your Order ID (<strong>#${order.id}</strong>) during pickup on <strong>${formattedPickupDate}</strong>.`
+          ? `🚚 <strong>Delivery Address:</strong> Our delivery rider is preparing or has dispatched your Grade AA trays to your location:<br><span style="display:block; margin-top: 6px; font-weight: bold; color: #2e2b26;">${order.deliveryAddress}</span>`
+          : `🏢 <strong>Farm Collection:</strong> Your trays are packed and ready for pickup at our Nanyuki depot on <strong>${formattedPickupDate}</strong>.<br><em style="font-size: 13px; color: #666; display:block; margin-top: 4px;">Please present your Reservation ID #${order.id} to the storekeeper.</em>`
         }
       </p>
 
-      <p style="margin: 0 0 25px 0; font-size: 14.5px; line-height: 1.5; color: #4d4d4d;">
-        Thank you for choosing Tabby Premium Eggs! We hope to serve you again soon.
+      <p style="margin: 0 0 25px 0; font-size: 14px; color: #5c554a;">
+        Thank you for choosing Tabby Premium Eggs! We appreciate your business and hope to see you again.
       </p>
     `;
   } else {
     statusHtml = `
-      <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; color: #b91c1c;">Order Canceled</h2>
-      <p style="margin: 0 0 15px 0; font-size: 15px; line-height: 1.5; color: #2d2d2d;">
+      <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #991b1b;">Order Canceled</h2>
+      <p style="margin: 0 0 15px 0; font-size: 15px; line-height: 1.6; color: #2e2b26;">
         Hi <strong>${order.customerName}</strong>, we wish to inform you that your reservation <strong>#${order.id}</strong> has been canceled.
       </p>
-      <p style="margin: 0 0 25px 0; font-size: 14.5px; line-height: 1.5; color: #4d4d4d;">
-        If you did not request this cancellation or require assistance, please contact our support team immediately at <strong>+254 722 237 593</strong>.
+      <p style="margin: 0 0 25px 0; font-size: 14.5px; line-height: 1.6; color: #5c554a; background-color: #fef2f2; border-left: 4px solid #991b1b; padding: 14px; border-radius: 0 8px 8px 0;">
+        If you did not request this cancellation or require assistance regarding a refund or adjustment, please reach out directly to our customer helpline at <strong>+254 722 237 593</strong>.
       </p>
     `;
   }
@@ -428,26 +482,26 @@ export async function sendOrderStatusUpdateEmail(order: Order) {
     ${statusHtml}
 
     <!-- Info Summary -->
-    <table border="0" cellpadding="10" cellspacing="0" width="100%" style="background-color: #faf9f5; border: 1px solid #ebdcb9; border-radius: 8px; margin-bottom: 25px; font-size: 13px;">
+    <table border="0" cellpadding="12" cellspacing="0" width="100%" style="background-color: #faf9f6; border: 1px solid #ebdcb9; border-radius: 12px; margin-bottom: 25px; font-size: 13.5px;">
       <tr>
-        <td style="color: #7c6e59; width: 120px;"><strong>Order ID:</strong></td>
-        <td style="font-family: monospace; font-weight: bold; color: #2d2d2d;">${order.id}</td>
+        <td style="color: #827765; width: 120px; padding-bottom: 6px;"><strong>Order ID:</strong></td>
+        <td style="font-family: monospace; font-weight: 700; color: #2e2b26; padding-bottom: 6px;">${order.id}</td>
       </tr>
       <tr>
-        <td style="color: #7c6e59;"><strong>Fulfillment Date:</strong></td>
-        <td style="color: #2d2d2d;">${formattedPickupDate}</td>
+        <td style="color: #827765; padding-bottom: 6px;"><strong>Fulfillment Date:</strong></td>
+        <td style="color: #2e2b26; padding-bottom: 6px;">${formattedPickupDate}</td>
       </tr>
       <tr>
-        <td style="color: #7c6e59;"><strong>Fulfillment Type:</strong></td>
-        <td style="color: #2d2d2d;">${isDelivery ? 'Delivery in Nanyuki' : 'Pickup at Farm'}</td>
+        <td style="color: #827765; padding-bottom: 6px;"><strong>Fulfillment Type:</strong></td>
+        <td style="color: #2e2b26; padding-bottom: 6px;">${isDelivery ? 'Delivery in Nanyuki' : 'Pickup at Depot'}</td>
       </tr>
       <tr>
-        <td style="color: #7c6e59;"><strong>Amount:</strong></td>
-        <td style="color: #b45309; font-weight: bold;">KES ${order.totalPrice.toLocaleString()}</td>
+        <td style="color: #827765; padding-bottom: 6px;"><strong>Amount:</strong></td>
+        <td style="color: #b45309; font-weight: bold; padding-bottom: 6px;">KES ${order.totalPrice.toLocaleString()}</td>
       </tr>
       <tr>
-        <td style="color: #7c6e59;"><strong>Fulfillment Status:</strong></td>
-        <td style="font-weight: bold; color: ${isFulfilled ? '#15803d' : '#b91c1c'}; text-transform: uppercase;">${order.status}</td>
+        <td style="color: #827765;"><strong>Fulfillment Status:</strong></td>
+        <td style="font-weight: 800; color: ${isFulfilled ? '#166534' : '#991b1b'}; text-transform: uppercase;">${order.status}</td>
       </tr>
     </table>
   `;
