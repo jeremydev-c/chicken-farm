@@ -50,7 +50,7 @@ export async function generateInvoicePdf(order: Order): Promise<Buffer> {
        .text(`Date Issued: ${new Date(order.orderDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 320, 187)
        .text(`Fulfillment Date: ${new Date(order.pickupDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 320, 199)
        .text(`Fulfillment Type: ${order.fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup'}`, 320, 211)
-       .text(`Payment: ${order.paymentMethod === 'paystack' ? 'Paid Online via Paystack' : 'Pay on Fulfillment'}`, 320, 223);
+        .text(`Payment: ${order.paymentStatus === 'paid' ? 'Paid (Paystack)' : 'Pending (Paystack)'}`, 320, 223);
 
     // Itemized Table Header
     let y = 260;
@@ -84,7 +84,7 @@ export async function generateInvoicePdf(order: Order): Promise<Buffer> {
     doc.fillColor('#d97706').font('Helvetica-Bold').fontSize(12).text(`KES ${order.totalPrice.toLocaleString()}`, 430, y, { width: 105, align: 'right' });
 
     // Draw Paid or Payment Status Stamp
-    const isPaid = order.paymentStatus === 'paid' || order.paymentMethod === 'paystack';
+    const isPaid = order.paymentStatus === 'paid';
     y += 15;
     if (isPaid) {
       doc.save();
@@ -95,9 +95,8 @@ export async function generateInvoicePdf(order: Order): Promise<Buffer> {
     } else {
       doc.save();
       doc.rotate(-10, { origin: [140, y + 25] });
-      doc.strokeColor('#9ca3af').lineWidth(2).rect(85, y, 120, 30).stroke();
-      const stampText = order.fulfillmentType === 'delivery' ? 'PAY ON DELIVERY' : 'PAY ON PICKUP';
-      doc.fillColor('#9ca3af').font('Helvetica-Bold').fontSize(10).text(stampText, 85, y + 9, { width: 120, align: 'center' });
+      doc.strokeColor('#ef4444').lineWidth(2).rect(85, y, 120, 30).stroke();
+      doc.fillColor('#ef4444').font('Helvetica-Bold').fontSize(10).text('UNPAID', 85, y + 9, { width: 120, align: 'center' });
       doc.restore();
     }
 

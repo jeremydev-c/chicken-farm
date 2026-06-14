@@ -87,7 +87,7 @@ export async function POST(request: Request) {
       pickupDate,
       status: 'pending',
       notes: notes || '',
-      paymentMethod: paymentMethod === 'paystack' ? 'paystack' : 'on_pickup',
+      paymentMethod: 'paystack',
       paymentStatus: 'unpaid',
       fulfillmentType: resolvedFulfillment,
       deliveryAddress: resolvedFulfillment === 'delivery' ? deliveryAddress.trim() : '',
@@ -100,8 +100,8 @@ export async function POST(request: Request) {
     const success = await writeDb(db);
 
     if (success) {
-      // For cash on pickup/delivery, send the confirmation and admin emails immediately
-      if (newOrder.paymentMethod === 'on_pickup') {
+      // For manually logged admin orders, send confirmation emails immediately
+      if (adminBypass) {
         sendOrderConfirmationEmail(newOrder).catch((err) =>
           console.error('Error sending order confirmation email:', err)
         );
@@ -138,6 +138,9 @@ export async function PUT(request: Request) {
     }
 
     db.orders[orderIndex].status = status as any;
+    if (status === 'fulfilled') {
+      db.orders[orderIndex].paymentStatus = 'paid';
+    }
     const success = await writeDb(db);
 
     if (success) {

@@ -210,12 +210,12 @@ export async function sendOrderConfirmationEmail(order: Order) {
   });
 
   const isDelivery = order.fulfillmentType === 'delivery';
-  const paymentMethodLabel = order.paymentMethod === 'paystack' ? 'Paid Online via Paystack' : 'Pay on Pickup/Delivery';
+  const paymentMethodLabel = 'Paid Online via Paystack';
   
   // Custom styled badges
   const paymentStatusBadge = order.paymentStatus === 'paid'
     ? `<span style="background-color: #def7ec; color: #03543f; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">PAID ✓</span>`
-    : `<span style="background-color: #fef3c7; color: #92400e; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">PENDING PAYMENT</span>`;
+    : `<span style="background-color: #fee2e2; color: #991b1b; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">PENDING ONLINE PAYMENT</span>`;
 
   const fulfillmentBadge = isDelivery
     ? `<span style="background-color: #e1effe; color: #1e429f; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">DELIVERY IN NANYUKI</span>`
@@ -337,11 +337,11 @@ export async function sendOrderConfirmationEmail(order: Order) {
  */
 export async function sendNewOrderAdminAlert(order: Order) {
   const isDelivery = order.fulfillmentType === 'delivery';
-  const paymentMethodLabel = order.paymentMethod === 'paystack' ? 'Paystack Online' : 'Pay on Pickup/Delivery';
+  const paymentMethodLabel = 'Paystack Online';
   
   const paymentStatusBadge = order.paymentStatus === 'paid'
     ? `<span style="background-color: #def7ec; color: #03543f; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">PAID ✓</span>`
-    : `<span style="background-color: #fef3c7; color: #92400e; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">UNPAID (COLLECT CASH)</span>`;
+    : `<span style="background-color: #fee2e2; color: #991b1b; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">UNPAID (PENDING PAYMENT)</span>`;
 
   const fulfillmentBadge = isDelivery
     ? `<span style="background-color: #e1effe; color: #1e429f; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">DELIVERY IN NANYUKI</span>`

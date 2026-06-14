@@ -78,7 +78,7 @@ const FAQS = [
   },
   {
     q: 'What payment methods do you accept?',
-    a: 'You can pay conveniently via M-Pesa or cash when you collect your order. No prepayment is required to reserve your trays.',
+    a: 'We accept secure online payments via Paystack. You can pay using M-Pesa, debit/credit cards, or bank transfers during the checkout process to secure your reservation.',
   },
   {
     q: 'Can I place a bulk or wholesale order?',
@@ -294,8 +294,8 @@ export default function LandingPage() {
               <div className="info-card glass">
                 <span className="step-num">3</span>
                 <CheckCircle className="info-icon" size={24} />
-                <h3>Direct Pickup & Pay</h3>
-                <p>Collect your fresh trays on your scheduled date from our Nanyuki depot and pay conveniently via M-Pesa or Cash.</p>
+                <h3>Secure Online Payment</h3>
+                <p>Pay securely via Paystack using M-Pesa or card at checkout, then collect your fresh trays on your scheduled date from our Nanyuki depot.</p>
               </div>
             </div>
           </div>

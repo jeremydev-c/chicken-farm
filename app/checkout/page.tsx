@@ -415,12 +415,8 @@ export default function CheckoutPage() {
                     id="submit-booking-btn"
                   >
                     {submitting
-                      ? paymentMethod === 'paystack'
-                        ? 'Reserving & redirecting to payment...'
-                        : 'Checking Stock & Booking...'
-                      : paymentMethod === 'paystack'
-                        ? 'Reserve & Pay Securely'
-                        : 'Submit Reservation'}
+                      ? 'Reserving & redirecting to payment...'
+                      : 'Reserve & Pay Securely'}
                   </button>
                 </form>
               </div>
