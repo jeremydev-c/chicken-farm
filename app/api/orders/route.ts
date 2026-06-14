@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { readDb, writeDb, Order, getEggStockSummary } from '@/lib/db';
 import { isAdminAuthenticated } from '@/lib/auth';
+import { sendOrderConfirmationEmail, sendNewOrderAdminAlert, sendOrderStatusUpdateEmail } from '@/lib/email';
 
 export async function GET(request: Request) {
   try {
@@ -99,6 +100,15 @@ export async function POST(request: Request) {
     const success = await writeDb(db);
 
     if (success) {
+      // For cash on pickup/delivery, send the confirmation and admin emails immediately
+      if (newOrder.paymentMethod === 'on_pickup') {
+        sendOrderConfirmationEmail(newOrder).catch((err) =>
+          console.error('Error sending order confirmation email:', err)
+        );
+        sendNewOrderAdminAlert(newOrder).catch((err) =>
+          console.error('Error sending admin order alert email:', err)
+        );
+      }
       return NextResponse.json(newOrder, { status: 201 });
     } else {
       return NextResponse.json({ error: 'Failed to save order' }, { status: 500 });
@@ -131,7 +141,14 @@ export async function PUT(request: Request) {
     const success = await writeDb(db);
 
     if (success) {
-      return NextResponse.json(db.orders[orderIndex]);
+      const updatedOrder = db.orders[orderIndex];
+      // Send notification email to the customer on fulfillment or cancellation
+      if (updatedOrder.status === 'fulfilled' || updatedOrder.status === 'canceled') {
+        sendOrderStatusUpdateEmail(updatedOrder).catch((err) =>
+          console.error('Error sending status update email:', err)
+        );
+      }
+      return NextResponse.json(updatedOrder);
     } else {
       return NextResponse.json({ error: 'Failed to update order status' }, { status: 500 });
     }

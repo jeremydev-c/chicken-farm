@@ -5,6 +5,7 @@ import {
   getPaystackSecretKey,
   PaystackError,
 } from '@/lib/paystack';
+import { sendOrderConfirmationEmail, sendNewOrderAdminAlert } from '@/lib/email';
 
 /**
  * GET /api/payments/verify?reference=...
@@ -51,6 +52,16 @@ export async function GET(request: Request) {
         order.paidAt = data.paid_at || new Date().toISOString();
       }
       await writeDb(db);
+
+      // Send confirmation emails after payment is verified and database is updated
+      if (confirmed) {
+        sendOrderConfirmationEmail(order).catch((err) =>
+          console.error('Error sending order confirmation email:', err)
+        );
+        sendNewOrderAdminAlert(order).catch((err) =>
+          console.error('Error sending admin order alert email:', err)
+        );
+      }
     }
 
     return NextResponse.json({
