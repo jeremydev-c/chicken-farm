@@ -47,6 +47,11 @@ export async function GET() {
       (o) => o.status === 'pending' && o.paymentStatus === 'paid'
     ).length;
 
+    // Fulfillment distribution across all active (non-canceled) orders
+    const activeOrders = db.orders.filter((o) => o.status !== 'canceled');
+    const totalDeliveries = activeOrders.filter((o) => o.fulfillmentType === 'delivery').length;
+    const totalPickups = activeOrders.filter((o) => o.fulfillmentType === 'pickup').length;
+
     // Create a 7-day trend for collections
     // Get unique dates of the last 7 days and sum counts
     const dailyCollections = db.inventory.reduce((acc, entry) => {
@@ -72,6 +77,8 @@ export async function GET() {
       pickupsTodayCount,
       lowStock,
       paidPendingCount,
+      totalDeliveries,
+      totalPickups,
       today,
     });
   } catch (error) {

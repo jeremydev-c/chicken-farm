@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Plus, Check, X, Calendar, User, Phone, Mail, FileText, AlertTriangle, Truck, Store, MapPin } from 'lucide-react';
+import { ShoppingBag, Search, Plus, Check, X, Calendar, User, Phone, Mail, FileText, AlertTriangle, Truck, Store, MapPin, Download } from 'lucide-react';
 import { Order, Product } from '@/lib/db';
 
 export default function AdminOrders() {
@@ -174,6 +174,63 @@ export default function AdminOrders() {
     return matchesStatus && matchesSearch && matchesToday;
   });
 
+  const handleExportCSV = () => {
+    if (filteredOrders.length === 0) {
+      alert('No reservations found to export.');
+      return;
+    }
+
+    const headers = [
+      'Order ID',
+      'Customer Name',
+      'Email',
+      'Phone',
+      'Fulfillment Type',
+      'Fulfillment Date',
+      'Delivery Address',
+      'Items',
+      'Total Price (KES)',
+      'Payment Method',
+      'Payment Status',
+      'Fulfillment Status',
+      'Date Placed'
+    ];
+
+    const rows = filteredOrders.map(order => [
+      order.id,
+      order.customerName,
+      order.customerEmail,
+      order.customerPhone,
+      order.fulfillmentType || 'pickup',
+      order.pickupDate,
+      (order.deliveryAddress || '').replace(/"/g, '""'),
+      order.items.map(i => `${i.quantity}x ${i.name}`).join('; '),
+      order.totalPrice,
+      order.paymentMethod || 'on_pickup',
+      order.paymentStatus || 'unpaid',
+      order.status,
+      order.orderDate
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(val => {
+        const strVal = String(val === null || val === undefined ? '' : val);
+        return `"${strVal.replace(/"/g, '""')}"`;
+      }).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `tabby_eggs_reservations_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const getStatusBadgeClass = (status: Order['status']) => {
     switch (status) {
       case 'fulfilled': return 'status-fulfilled';
@@ -219,13 +276,22 @@ export default function AdminOrders() {
           </div>
         </div>
 
-        <button 
-          onClick={() => setShowManualForm(!showManualForm)} 
-          className="btn btn-primary add-reservation-btn"
-          id="add-manual-order-btn"
-        >
-          <Plus size={16} /> Log Manual Reservation
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button 
+            onClick={handleExportCSV} 
+            className="btn btn-secondary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: '1px solid var(--border-color)', fontWeight: 700, fontSize: '0.85rem' }}
+          >
+            <Download size={16} /> Export CSV
+          </button>
+          <button 
+            onClick={() => setShowManualForm(!showManualForm)} 
+            className="btn btn-primary add-reservation-btn"
+            id="add-manual-order-btn"
+          >
+            <Plus size={16} /> Log Manual Reservation
+          </button>
+        </div>
       </div>
 
       {/* Manual order form card */}

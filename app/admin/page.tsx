@@ -21,6 +21,13 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [resetting, setResetting] = useState(false);
+  const [alertThreshold, setAlertThreshold] = useState<number>(5);
+
+  const handleThresholdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseInt(e.target.value, 10) || 0;
+    setAlertThreshold(val);
+    localStorage.setItem('low_stock_threshold', val.toString());
+  };
 
   const handleResetDatabase = async (clearProducts: boolean) => {
     const confirmMsg = clearProducts
@@ -69,6 +76,10 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadDashboardData();
+    const savedThreshold = localStorage.getItem('low_stock_threshold');
+    if (savedThreshold) {
+      setAlertThreshold(parseInt(savedThreshold, 10));
+    }
   }, []);
 
   const handleUpdateOrderStatus = async (orderId: string, status: Order['status']) => {
@@ -155,6 +166,8 @@ export default function AdminDashboard() {
     lowStock = false,
   } = stats;
 
+  const showLowStockAlert = eggStock && !eggStock.isOverbooked && eggStock.availableTrays <= alertThreshold;
+
   // Max value for bar chart calculation
   const maxCollectionCount = collectionTrend.length > 0 
     ? Math.max(...collectionTrend.map((t: any) => t.count), 100) 
@@ -188,7 +201,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Low Stock Warning */}
-      {!eggStock.isOverbooked && lowStock && (
+      {showLowStockAlert && (
         <div className="alert-card warn glass">
           <div className="alert-header">
             <AlertTriangle className="alert-icon warn-icon" size={24} />
@@ -214,6 +227,20 @@ export default function AdminDashboard() {
               <span className="stat-label">Net Available Eggs</span>
               <h2 className="stat-value">{eggStock.availableTrays} Trays</h2>
               <span className="stat-sub">{eggStock.available} individual eggs</span>
+
+              <div className="threshold-ctrl" onClick={(e) => e.stopPropagation()}>
+                <label htmlFor="threshold-input">Alert under:</label>
+                <input 
+                  id="threshold-input"
+                  type="number" 
+                  min="0"
+                  max="100"
+                  value={alertThreshold} 
+                  onChange={handleThresholdChange}
+                  className="threshold-field"
+                />
+                <span>trays</span>
+              </div>
             </div>
             <div className="stat-icon-wrapper">
               <Egg size={24} />
@@ -336,7 +363,7 @@ export default function AdminDashboard() {
               <Link href="/admin/inventory" className="btn btn-secondary mt-2">Log Collection</Link>
             </div>
           ) : (
-            <div className="chart-container">
+            <div className="chart-container" style={{ marginBottom: '1rem' }}>
               <div className="chart-y-axis">
                 <span>{maxCollectionCount}</span>
                 <span>{Math.floor(maxCollectionCount / 2)}</span>
@@ -364,6 +391,56 @@ export default function AdminDashboard() {
               </div>
             </div>
           )}
+
+          {/* Fulfillment Share Analytics */}
+          <div className="fulfillment-share-card-section">
+            <div className="sub-header" style={{ marginBottom: '0.85rem' }}>
+              <h4 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--primary-color)' }}>Fulfillment Method Share</h4>
+              <span className="card-header-sub" style={{ fontSize: '0.8rem', color: 'var(--fg-muted)' }}>Distribution across active orders</span>
+            </div>
+            {(!stats.totalDeliveries && !stats.totalPickups) ? (
+              <p className="empty-sub-text">No active fulfillment data yet.</p>
+            ) : (() => {
+              const activeCount = (stats.totalDeliveries || 0) + (stats.totalPickups || 0);
+              if (activeCount === 0) return <p className="empty-sub-text">No active fulfillment data yet.</p>;
+              const delPercent = Math.round(((stats.totalDeliveries || 0) / activeCount) * 100);
+              const pickPercent = 100 - delPercent;
+              return (
+                <div className="fulfillment-share-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  <div className="progress-bar-container" style={{ display: 'flex', height: '22px', width: '100%', borderRadius: '12px', overflow: 'hidden', backgroundColor: 'var(--border-color-solid)' }}>
+                    {delPercent > 0 && (
+                      <div 
+                        className="progress-fill delivery-fill" 
+                        style={{ width: `${delPercent}%`, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '0.75rem', fontWeight: 800, background: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)' }}
+                        title={`Delivery: ${stats.totalDeliveries} orders (${delPercent}%)`}
+                      >
+                        {delPercent >= 15 && <span className="fill-label">{delPercent}%</span>}
+                      </div>
+                    )}
+                    {pickPercent > 0 && (
+                      <div 
+                        className="progress-fill pickup-fill" 
+                        style={{ width: `${pickPercent}%`, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '0.75rem', fontWeight: 800, background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)' }}
+                        title={`Pickup: ${stats.totalPickups} orders (${pickPercent}%)`}
+                      >
+                        {pickPercent >= 15 && <span className="fill-label">{pickPercent}%</span>}
+                      </div>
+                    )}
+                  </div>
+                  <div className="share-legend" style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div className="legend-item" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.82rem' }}>
+                      <span className="legend-dot delivery-dot" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6' }}></span>
+                      <span>Delivery (Nanyuki): <strong>{stats.totalDeliveries || 0}</strong> ({delPercent}%)</span>
+                    </div>
+                    <div className="legend-item" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.82rem' }}>
+                      <span className="legend-dot pickup-dot" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f59e0b' }}></span>
+                      <span>Pickup (Depot): <strong>{stats.totalPickups || 0}</strong> ({pickPercent}%)</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
         </div>
 
         {/* Actionable Orders Column */}
@@ -570,7 +647,48 @@ export default function AdminDashboard() {
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          height: 150px;
+          min-height: 150px;
+          height: auto;
+        }
+
+        /* Threshold Alert config styling */
+        .threshold-ctrl {
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+          margin-top: 0.65rem;
+          font-size: 0.75rem;
+          color: var(--fg-muted);
+          font-weight: 600;
+        }
+        .threshold-field {
+          width: 48px;
+          padding: 0.15rem 0.3rem;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-align: center;
+          background: var(--bg-card-solid);
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          color: var(--fg-color);
+          outline: none;
+          transition: border-color 0.2s ease;
+        }
+        .threshold-field:focus {
+          border-color: var(--primary-color);
+        }
+
+        /* Fulfillment Share styling */
+        .fulfillment-share-card-section {
+          margin-top: 2rem;
+          border-top: 1px solid var(--border-color-solid);
+          padding-top: 1.5rem;
+        }
+        .empty-sub-text {
+          font-size: 0.85rem;
+          color: var(--fg-muted);
+          text-align: center;
+          padding: 1rem 0;
         }
 
         .card-top {
