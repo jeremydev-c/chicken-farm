@@ -168,8 +168,7 @@ export async function writeDb(data: DatabaseSchema): Promise<boolean> {
       
       return true;
     } catch (error) {
-      console.error('Failed to write to MongoDB:', error);
-      return false;
+      console.error('Failed to write to MongoDB, falling back to local file:', error);
     }
   }
 
