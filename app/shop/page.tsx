@@ -30,38 +30,6 @@ export default function ShopCatalog() {
     loadProducts();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="loader-container">
-        <div className="spinner"></div>
-        <p>Gathering fresh products...</p>
-        <style jsx>{`
-          .loader-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            gap: 1.5rem;
-            color: var(--primary-color);
-          }
-          .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--border-color-solid);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
-  }
-
   return (
     <div className="layout-wrapper">
       <Navbar />
@@ -85,73 +53,86 @@ export default function ShopCatalog() {
 
         <section className="catalog-section" style={{ paddingBottom: '6rem' }}>
           <div className="container">
-            <div className="products-grid">
-              {products.map(product => {
-                const requiredEggs = product.id === 'prod_eggs_30' ? 30 : 60;
-                const isOutOfStock = eggStats.available < requiredEggs;
-                const availableForProduct = Math.floor(eggStats.available / requiredEggs);
+            {loading ? (
+              <div className="products-grid">
+                {[1, 2].map((i) => (
+                  <div key={i} className="product-card glass shimmer" style={{ minHeight: '420px', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '1.2rem', padding: '1.5rem' }}>
+                    <div style={{ background: 'rgba(var(--primary-rgb), 0.05)', width: '100%', height: '220px', borderRadius: 'var(--radius-sm)' }}></div>
+                    <div style={{ background: 'rgba(var(--primary-rgb), 0.05)', width: '60%', height: '24px', borderRadius: '4px' }}></div>
+                    <div style={{ background: 'rgba(var(--primary-rgb), 0.05)', width: '30%', height: '18px', borderRadius: '4px' }}></div>
+                    <div style={{ background: 'rgba(var(--primary-rgb), 0.05)', width: '100%', height: '42px', borderRadius: 'var(--radius-sm)', marginTop: 'auto' }}></div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="products-grid">
+                {products.map(product => {
+                  const requiredEggs = product.id === 'prod_eggs_30' ? 30 : 60;
+                  const isOutOfStock = eggStats.available < requiredEggs;
+                  const availableForProduct = Math.floor(eggStats.available / requiredEggs);
 
-                return (
-                  <div key={product.id} className="product-card glass card-hover">
-                    <Link href={`/shop/${product.id}`} className="product-image-container">
-                      <img 
-                        src={product.image} 
-                        alt={product.name} 
-                        className="product-image"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                      <div className="product-image-placeholder">
-                        🥚
-                      </div>
-                      {!isOutOfStock ? (
-                        <span className="product-badge eggs-badge">{availableForProduct} Trays Available</span>
-                      ) : (
-                        <span className="product-badge sold-out-badge">Out of Stock</span>
-                      )}
-                    </Link>
-                    
-                    <div className="product-details">
-                      <div className="product-title-row">
-                        <Link href={`/shop/${product.id}`}>
-                          <h3>{product.name}</h3>
-                        </Link>
-                        <span className="price-tag">KES {product.price.toLocaleString()}</span>
-                      </div>
-                      <div className="product-rating">
-                        <span className="stars">
-                          {Array.from({ length: 5 }).map((_, s) => <Star key={s} size={14} />)}
-                        </span>
-                        <span className="rating-count">4.9 (320+ reviews)</span>
-                      </div>
-                      <p className="product-desc">{product.description}</p>
-                      
-                      <div className="product-card-footer">
-                        {product.inStock ? (
-                          isOutOfStock ? (
-                            <button disabled className="btn btn-secondary btn-full">
-                              Sold Out Today
-                            </button>
-                          ) : (
-                            <button 
-                              onClick={() => addToCart(product)} 
-                              className="btn btn-primary btn-full"
-                            >
-                              Add to Cart
-                            </button>
-                          )
+                  return (
+                    <div key={product.id} className="product-card glass card-hover">
+                      <Link href={`/shop/${product.id}`} className="product-image-container">
+                        <img 
+                          src={product.image} 
+                          alt={product.name} 
+                          className="product-image"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                        <div className="product-image-placeholder">
+                          🥚
+                        </div>
+                        {!isOutOfStock ? (
+                          <span className="product-badge eggs-badge">{availableForProduct} Trays Available</span>
                         ) : (
-                          <button disabled className="btn btn-secondary btn-full">
-                            Out of Stock
-                          </button>
+                          <span className="product-badge sold-out-badge">Out of Stock</span>
                         )}
+                      </Link>
+                      
+                      <div className="product-details">
+                        <div className="product-title-row">
+                          <Link href={`/shop/${product.id}`}>
+                            <h3>{product.name}</h3>
+                          </Link>
+                          <span className="price-tag">KES {product.price.toLocaleString()}</span>
+                        </div>
+                        <div className="product-rating">
+                          <span className="stars">
+                            {Array.from({ length: 5 }).map((_, s) => <Star key={s} size={14} />)}
+                          </span>
+                          <span className="rating-count">4.9 (320+ reviews)</span>
+                        </div>
+                        <p className="product-desc">{product.description}</p>
+                        
+                        <div className="product-card-footer">
+                          {product.inStock ? (
+                            isOutOfStock ? (
+                              <button disabled className="btn btn-secondary btn-full">
+                                Sold Out Today
+                              </button>
+                            ) : (
+                              <button 
+                                onClick={() => addToCart(product)} 
+                                className="btn btn-primary btn-full"
+                              >
+                                Add to Cart
+                              </button>
+                            )
+                          ) : (
+                            <button disabled className="btn btn-secondary btn-full">
+                              Out of Stock
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Bulk Order Card */}
             <div className="bulk-order-banner glass card-hover">

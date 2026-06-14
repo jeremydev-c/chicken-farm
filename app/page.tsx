@@ -116,7 +116,7 @@ export default function LandingPage() {
               </p>
               
               {/* Egg Stock Urgency Bar */}
-              <div className="inventory-banner glass">
+              <div className="inventory-banner glass" style={{ minHeight: '68px' }}>
                 <div className="inventory-info">
                   <TrendingUp className="stat-trend-icon" size={20} />
                   <div>
@@ -132,13 +132,15 @@ export default function LandingPage() {
                     <p className="inventory-sub">Collected fresh in Nanyuki & calculated in real-time to prevent overbooking.</p>
                   </div>
                 </div>
-                {!loadingStats && (
-                  eggStats.availableTrays > 0 ? (
+                <div className="stock-pill-wrapper" style={{ display: 'flex', alignItems: 'center', minHeight: '26px' }}>
+                  {loadingStats ? (
+                    <span className="stock-pill shimmer" style={{ opacity: 0.35, width: '120px', height: '22px', borderRadius: '9999px', display: 'inline-block' }}></span>
+                  ) : eggStats.availableTrays > 0 ? (
                     <span className="stock-pill in-stock">Ready for Reservation</span>
                   ) : (
                     <span className="stock-pill out-of-stock">Restocking Today</span>
-                  )
-                )}
+                  )}
+                </div>
               </div>
 
               <div className="hero-actions" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
