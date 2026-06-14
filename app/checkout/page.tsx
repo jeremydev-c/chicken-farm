@@ -39,7 +39,7 @@ export default function CheckoutPage() {
   const [customerPhone, setCustomerPhone] = useState('');
   const [pickupDate, setPickupDate] = useState('');
   const [notes, setNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'on_pickup' | 'paystack'>('on_pickup');
+  const [paymentMethod, setPaymentMethod] = useState<'on_pickup' | 'paystack'>('paystack');
   const [fulfillmentType, setFulfillmentType] = useState<'delivery' | 'pickup'>('pickup');
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [deliveryCoords, setDeliveryCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -109,7 +109,7 @@ export default function CheckoutPage() {
 
           setOrderError(
             (payData.error || 'Could not start online payment.') +
-              ' Your order has been reserved — you can pay on pickup instead.'
+              ' Your reservation has been saved — you can retry payment on the tracking page.'
           );
           await refreshEggStats();
           setSubmitting(false);
@@ -245,7 +245,7 @@ export default function CheckoutPage() {
           
           <div className="checkout-title-block">
             <h1>Finalize Your Reservation</h1>
-            <p>Fill in your pick up details below. Pay securely online with Paystack (card or M-Pesa) now, or pay with M-Pesa / Cash on pickup.</p>
+            <p>Fill in your pickup details below. Pay securely online via Paystack (supports M-Pesa and Card).</p>
           </div>
 
           {cart.length === 0 ? (
@@ -399,31 +399,12 @@ export default function CheckoutPage() {
 
                   <div className="form-group">
                     <label>Payment Method</label>
-                    <div className="pay-methods">
-                      <button
-                        type="button"
-                        className={`pay-option ${paymentMethod === 'on_pickup' ? 'active' : ''}`}
-                        onClick={() => setPaymentMethod('on_pickup')}
-                        aria-pressed={paymentMethod === 'on_pickup'}
-                      >
-                        <Wallet size={20} />
-                        <span className="pay-option-text">
-                          <strong>Pay on Pickup</strong>
-                          <span>M-Pesa or Cash on collection</span>
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        className={`pay-option ${paymentMethod === 'paystack' ? 'active' : ''}`}
-                        onClick={() => setPaymentMethod('paystack')}
-                        aria-pressed={paymentMethod === 'paystack'}
-                      >
-                        <CreditCard size={20} />
-                        <span className="pay-option-text">
-                          <strong>Pay Now</strong>
-                          <span>Card or M-Pesa via Paystack</span>
-                        </span>
-                      </button>
+                    <div className="pay-methods-single glass" style={{ padding: '1.25rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', display: 'flex', gap: '0.75rem', alignItems: 'center', backgroundColor: 'rgba(var(--primary-rgb), 0.02)' }}>
+                      <CreditCard size={24} style={{ color: 'var(--accent-dark)', flexShrink: 0 }} />
+                      <div>
+                        <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--primary-color)' }}>Pay Securely via Paystack</strong>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--fg-muted)' }}>Supports M-Pesa, Card, and Bank Transfer. Instant reservation verification.</span>
+                      </div>
                     </div>
                   </div>
 
@@ -484,7 +465,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <p className="summary-disclaimer">
-                    Prices are based on direct Nanyuki sourcing. Pay securely on pickup/delivery using M-Pesa or Cash.
+                    Prices are based on direct Nanyuki sourcing. All transactions are securely processed online via Paystack.
                   </p>
                 </div>
 

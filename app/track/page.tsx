@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Order } from '@/lib/db';
-import { Search, Calendar, User, Phone, Mail, Clock, CheckCircle, XCircle, AlertCircle, Truck, Store, MapPin, Download } from 'lucide-react';
+import { Search, Calendar, User, Phone, Mail, Clock, CheckCircle, XCircle, AlertCircle, Truck, Store, MapPin, Download, CreditCard } from 'lucide-react';
 
 export default function OrderTracking() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,6 +51,24 @@ export default function OrderTracking() {
       setError('A network error occurred. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePayNow = async (orderId: string) => {
+    try {
+      const res = await fetch('/api/payments/initialize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId })
+      });
+      const data = await res.json();
+      if (res.ok && data.authorizationUrl) {
+        window.location.href = data.authorizationUrl;
+      } else {
+        alert(data.error || 'Failed to initialize payment.');
+      }
+    } catch (err) {
+      alert('Network error. Failed to start payment.');
     }
   };
 
@@ -277,11 +295,20 @@ export default function OrderTracking() {
                         </div>
                         <span className="payment-notice">
                           {order.paymentStatus === 'paid'
-                            ? '* Payment received online via Paystack.'
-                            : '* Payment is completed on pickup or delivery (via M-Pesa or Cash).'}
+                            ? '✓ Payment successfully processed via Paystack.'
+                            : '⚠ Payment is pending online via Paystack.'}
                         </span>
 
-                        <div className="invoice-download-wrapper" style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end' }}>
+                        <div className="invoice-download-wrapper" style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                          {order.paymentStatus !== 'paid' && order.status !== 'canceled' && (
+                            <button
+                              onClick={() => handlePayNow(order.id)}
+                              className="btn btn-primary"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}
+                            >
+                              <CreditCard size={14} /> Pay Now via Paystack
+                            </button>
+                          )}
                           <a 
                             href={`/api/orders/invoice?id=${order.id}`}
                             target="_blank"

@@ -263,7 +263,7 @@ export default function PaymentVerifyPage() {
                 </h2>
                 <p className="verify-text">
                   {state === 'failed'
-                    ? 'Your payment was not successful. Your order is still reserved — you can try paying again or pay on pickup.'
+                    ? 'Your payment was not successful. Your order is still reserved — you can try paying again online from the tracking page.'
                     : message}
                 </p>
                 <div className="verify-actions">
