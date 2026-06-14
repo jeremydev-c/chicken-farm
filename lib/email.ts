@@ -1,13 +1,20 @@
 import { Order } from './db';
+import { generateInvoicePdf } from './pdf';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'tabbypremiumeggs@gmail.com';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.tabbypremiumeggs.online';
 
+interface EmailAttachment {
+  filename: string;
+  content: string; // Base64 string
+}
+
 interface SendEmailParams {
   to: string | string[];
   subject: string;
   html: string;
+  attachments?: EmailAttachment[];
 }
 
 /**
@@ -31,7 +38,7 @@ function getWhatsAppLink(phone: string, orderId: string, name: string): string {
 /**
  * Generic helper to send emails via Resend's REST API using native fetch.
  */
-export async function sendEmail({ to, subject, html }: SendEmailParams) {
+export async function sendEmail({ to, subject, html, attachments }: SendEmailParams) {
   if (!RESEND_API_KEY) {
     console.warn('[Resend] Warning: RESEND_API_KEY is not defined. Email dispatch skipped.');
     return { success: false, error: 'Resend API key is missing' };
@@ -51,6 +58,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
         to: recipients,
         subject,
         html,
+        ...(attachments ? { attachments } : {})
       }),
     });
 
@@ -301,11 +309,25 @@ export async function sendOrderConfirmationEmail(order: Order) {
     </table>
   `;
 
+  let attachments;
+  try {
+    const pdfBuffer = await generateInvoicePdf(order);
+    attachments = [
+      {
+        filename: `tabby_eggs_invoice_${order.id}.pdf`,
+        content: pdfBuffer.toString('base64'),
+      },
+    ];
+  } catch (err) {
+    console.error('Failed to attach invoice PDF to confirmation email:', err);
+  }
+
   const html = getEmailWrapper(contentHtml);
   return sendEmail({
     to: order.customerEmail,
     subject: `🍳 Reservation Confirmed - Order #${order.id}`,
     html,
+    attachments,
   });
 }
 
@@ -506,10 +528,26 @@ export async function sendOrderStatusUpdateEmail(order: Order) {
     </table>
   `;
 
+  let attachments;
+  if (isFulfilled) {
+    try {
+      const pdfBuffer = await generateInvoicePdf(order);
+      attachments = [
+        {
+          filename: `tabby_eggs_invoice_${order.id}.pdf`,
+          content: pdfBuffer.toString('base64'),
+        },
+      ];
+    } catch (err) {
+      console.error('Failed to attach invoice PDF to status update email:', err);
+    }
+  }
+
   const html = getEmailWrapper(contentHtml);
   return sendEmail({
     to: order.customerEmail,
     subject,
     html,
+    attachments,
   });
 }
