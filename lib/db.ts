@@ -136,47 +136,59 @@ export async function writeDb(data: DatabaseSchema): Promise<boolean> {
       if (!client) throw new Error('MongoClient is null');
       const db = client.db(process.env.MONGODB_DB || undefined);
       
-      // Sync products
+      // Sync products using bulkWrite to avoid sequential network roundtrips
       const productsColl = db.collection('products');
-      try {
-        await productsColl.dropIndexes();
-      } catch (e) {
-        // Ignore if no indexes exist or cannot drop
-      }
-      for (const item of data.products) {
-        const { _id, ...doc } = item as any;
-        await productsColl.replaceOne({ id: item.id }, doc, { upsert: true });
+      if (data.products.length > 0) {
+        const productOps = data.products.map((item) => {
+          const { _id, ...doc } = item as any;
+          return {
+            replaceOne: {
+              filter: { id: item.id },
+              replacement: doc,
+              upsert: true,
+            },
+          };
+        });
+        await productsColl.bulkWrite(productOps);
       }
       const productIds = data.products.map(p => p.id);
       await productsColl.deleteMany({ id: { $nin: productIds } });
       
-      // Sync inventory
+      // Sync inventory using bulkWrite to avoid sequential network roundtrips
       const inventoryColl = db.collection('inventory');
-      try {
-        await inventoryColl.dropIndexes();
-      } catch (e) {
-        // Ignore if no indexes exist
-      }
-      for (const item of data.inventory) {
-        const { _id, ...doc } = item as any;
-        await inventoryColl.replaceOne({ id: item.id }, doc, { upsert: true });
+      if (data.inventory.length > 0) {
+        const inventoryOps = data.inventory.map((item) => {
+          const { _id, ...doc } = item as any;
+          return {
+            replaceOne: {
+              filter: { id: item.id },
+              replacement: doc,
+              upsert: true,
+            },
+          };
+        });
+        await inventoryColl.bulkWrite(inventoryOps);
       }
       const inventoryIds = data.inventory.map(i => i.id);
       await inventoryColl.deleteMany({ id: { $nin: inventoryIds } });
       
-      // Sync orders
+      // Sync orders using bulkWrite to avoid sequential network roundtrips
       const ordersColl = db.collection('orders');
-      try {
-        await ordersColl.dropIndexes();
-      } catch (e) {
-        // Ignore if no indexes exist
-      }
-      for (const item of data.orders) {
-        const { _id, ...doc } = item as any;
-        if (doc.customerPhone) {
-          doc.customerPhoneNormalized = String(doc.customerPhone).replace(/[^0-9]/g, '');
-        }
-        await ordersColl.replaceOne({ id: item.id }, doc, { upsert: true });
+      if (data.orders.length > 0) {
+        const orderOps = data.orders.map((item) => {
+          const { _id, ...doc } = item as any;
+          if (doc.customerPhone) {
+            doc.customerPhoneNormalized = String(doc.customerPhone).replace(/[^0-9]/g, '');
+          }
+          return {
+            replaceOne: {
+              filter: { id: item.id },
+              replacement: doc,
+              upsert: true,
+            },
+          };
+        });
+        await ordersColl.bulkWrite(orderOps);
       }
       const orderIds = data.orders.map(o => o.id);
       await ordersColl.deleteMany({ id: { $nin: orderIds } });
