@@ -463,16 +463,19 @@ export async function sendNewOrderAdminAlert(order: Order) {
 export async function sendOrderStatusUpdateEmail(order: Order) {
   const isDelivered = order.status === 'delivered';
   const isCanceled = order.status === 'canceled';
+  const isReady = order.status === 'ready_for_pickup';
 
-  if (!isDelivered && !isCanceled) return { success: false, error: 'Status is not delivered or canceled.' };
+  if (!isDelivered && !isCanceled && !isReady) return { success: false, error: 'Status is not delivered, ready_for_pickup, or canceled.' };
 
   const isDelivery = order.fulfillmentType === 'delivery';
 
   const subject = isCanceled 
     ? `❌ Update: Order #${order.id} Canceled` 
-    : isDelivery
-      ? `🍳 Your Order #${order.id} is Delivered!` 
-      : `🏢 Your Order #${order.id} is Collected!`;
+    : isReady
+      ? `🏢 Order Ready for Pickup: Reservation #${order.id}`
+      : isDelivery
+        ? `🍳 Your Order #${order.id} is Delivered!` 
+        : `🏢 Your Order #${order.id} is Collected!`;
 
   const formattedPickupDate = new Date(order.pickupDate).toLocaleDateString('en-KE', {
     weekday: 'long',
@@ -514,6 +517,23 @@ export async function sendOrderStatusUpdateEmail(order: Order) {
         </p>
       `;
     }
+  } else if (isReady) {
+    statusHtml = `
+      <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #b45309;">Your Order is Ready for Pickup!</h2>
+      <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #2e2b26;">
+        Hi <strong>${order.customerName}</strong>, great news! Your egg reservation <strong>#${order.id}</strong> is now packed and ready for collection at our depot.
+      </p>
+      
+      <p style="margin: 0 0 20px 0; font-size: 14.5px; line-height: 1.6; color: #5c554a; background-color: #faf9f6; border-left: 4px solid #b45309; padding: 14px; border-radius: 0 8px 8px 0;">
+        🏢 <strong>Pickup Location:</strong> Nanyuki depot, Nanyuki Town.<br>
+        ⏰ <strong>Collection Hours:</strong> Daily 8:00 AM – 7:00 PM.<br>
+        💡 <em>Please present your Reservation ID (<strong>${order.id}</strong>) to the storekeeper during pickup.</em>
+      </p>
+
+      <p style="margin: 0 0 25px 0; font-size: 14px; color: #5c554a;">
+        Your reservation details and invoice have been attached to this email as a PDF. We look forward to welcoming you at the depot!
+      </p>
+    `;
   } else {
     statusHtml = `
       <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #991b1b;">Order Canceled</h2>
@@ -549,15 +569,15 @@ export async function sendOrderStatusUpdateEmail(order: Order) {
       </tr>
       <tr>
         <td style="color: #827765;"><strong>Fulfillment Status:</strong></td>
-        <td style="font-weight: 800; color: ${isDelivered ? '#166534' : '#991b1b'}; text-transform: uppercase;">
-          ${isCanceled ? 'CANCELED' : (isDelivery ? 'DELIVERED' : 'COLLECTED')}
+        <td style="font-weight: 800; color: ${isDelivered ? '#166534' : isReady ? '#b45309' : '#991b1b'}; text-transform: uppercase;">
+          ${isCanceled ? 'CANCELED' : isReady ? 'READY FOR PICKUP' : (isDelivery ? 'DELIVERED' : 'COLLECTED')}
         </td>
       </tr>
     </table>
   `;
 
   let attachments;
-  if (isDelivered) {
+  if (isDelivered || isReady) {
     try {
       const pdfBuffer = await generateInvoicePdf(order);
       attachments = [

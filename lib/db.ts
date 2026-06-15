@@ -44,7 +44,7 @@ export interface Order {
   totalPrice: number;
   orderDate: string; // ISO string
   pickupDate: string; // YYYY-MM-DD (the scheduled delivery OR pickup date)
-  status: 'pending' | 'delivered' | 'canceled';
+  status: 'pending' | 'ready_for_pickup' | 'delivered' | 'canceled';
   notes: string;
   paymentMethod?: PaymentMethod;
   paymentStatus?: PaymentStatus;
@@ -222,7 +222,7 @@ export async function getEggStockSummary() {
     .reduce((sum, entry) => sum + entry.count, 0);
 
   // Total eggs promised (sum of quantity in pending orders, converted to individual eggs)
-  const pendingOrders = db.orders.filter(order => order.status === 'pending');
+  const pendingOrders = db.orders.filter(order => order.status === 'pending' || order.status === 'ready_for_pickup');
   
   let totalPromisedEggs = 0;
   pendingOrders.forEach(order => {

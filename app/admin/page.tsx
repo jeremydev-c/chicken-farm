@@ -339,6 +339,15 @@ export default function AdminDashboard() {
                   {order.fulfillmentType === 'delivery' && (
                     <a href={mapsLink(order)} target="_blank" rel="noopener noreferrer" className="contact-btn maps" title="Open in Google Maps" aria-label="Directions"><MapPin size={14} /></a>
                   )}
+                  {order.fulfillmentType === 'pickup' && order.status === 'pending' && (
+                    <button 
+                      onClick={() => handleUpdateOrderStatus(order.id, 'ready_for_pickup')} 
+                      className="action-btn ready-btn" 
+                      title="Mark as Ready for Pickup"
+                    >
+                      <Check size={14} /> Ready
+                    </button>
+                  )}
                   <button 
                     onClick={() => handleUpdateOrderStatus(order.id, 'delivered')} 
                     className="action-btn fulfill-btn" 
@@ -487,8 +496,17 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="row-actions">
-                    {order.status === 'pending' ? (
+                    {(order.status === 'pending' || order.status === 'ready_for_pickup') ? (
                       <>
+                        {order.status === 'pending' && order.fulfillmentType === 'pickup' && (
+                          <button 
+                            onClick={() => handleUpdateOrderStatus(order.id, 'ready_for_pickup')}
+                            className="action-btn ready-btn" 
+                            title="Mark as Ready for Pickup"
+                          >
+                            <Check size={14} /> Ready
+                          </button>
+                        )}
                         <button 
                           onClick={() => handleUpdateOrderStatus(order.id, 'delivered')}
                           className="action-btn fulfill-btn" 
@@ -1032,6 +1050,15 @@ export default function AdminDashboard() {
           background-color: var(--primary-light);
         }
 
+        .ready-btn {
+          background-color: var(--primary-color);
+          color: #ffffff;
+        }
+        
+        .ready-btn:hover {
+          background-color: var(--primary-light);
+        }
+
         .cancel-btn {
           background-color: var(--border-color-solid);
           color: var(--fg-muted);
@@ -1063,6 +1090,11 @@ export default function AdminDashboard() {
         .status-pill.pending {
           background-color: rgba(233, 196, 106, 0.15);
           color: var(--gold-light);
+        }
+
+        .status-pill.ready_for_pickup {
+          background-color: rgba(var(--primary-rgb), 0.12);
+          color: var(--primary-color);
         }
 
         /* Low-stock / warn alert variant */

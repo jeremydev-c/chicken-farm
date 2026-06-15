@@ -10,7 +10,7 @@ export async function GET() {
     const db = await readDb();
     const eggStock = await getEggStockSummary();
 
-    const pendingOrders = db.orders.filter(o => o.status === 'pending');
+    const pendingOrders = db.orders.filter(o => o.status === 'pending' || o.status === 'ready_for_pickup');
     const deliveredOrders = db.orders.filter(o => o.status === 'delivered');
 
     const pendingOrdersCount = pendingOrders.length;
@@ -27,12 +27,12 @@ export async function GET() {
       .sort((a, b) => b.orderDate.localeCompare(a.orderDate))
       .slice(0, 5);
 
-    // Today's schedule (Nanyuki / Kenya time) - pending orders due today
+    // Today's schedule (Nanyuki / Kenya time) - pending/ready orders due today
     const today = new Date().toLocaleDateString('en-CA', {
       timeZone: 'Africa/Nairobi',
     });
     const scheduleToday = db.orders
-      .filter((o) => o.status === 'pending' && o.pickupDate === today)
+      .filter((o) => (o.status === 'pending' || o.status === 'ready_for_pickup') && o.pickupDate === today)
       .sort((a, b) => a.customerName.localeCompare(b.customerName));
     const deliveriesTodayCount = scheduleToday.filter(
       (o) => o.fulfillmentType === 'delivery'
@@ -42,9 +42,9 @@ export async function GET() {
     // Smart stock signal: warn when running low (but not yet overbooked)
     const lowStock = !eggStock.isOverbooked && eggStock.availableTrays <= 5;
 
-    // Count of online-paid pending orders awaiting fulfillment
+    // Count of online-paid pending/ready orders awaiting fulfillment
     const paidPendingCount = db.orders.filter(
-      (o) => o.status === 'pending' && o.paymentStatus === 'paid'
+      (o) => (o.status === 'pending' || o.status === 'ready_for_pickup') && o.paymentStatus === 'paid'
     ).length;
 
     // Fulfillment distribution across all active (non-canceled) orders

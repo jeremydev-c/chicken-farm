@@ -11,7 +11,7 @@ export default function AdminOrders() {
   const [error, setError] = useState<string | null>(null);
 
   // Search & Filter State
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'delivered' | 'canceled'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'ready_for_pickup' | 'delivered' | 'canceled'>('all');
   const [filterFulfillment, setFilterFulfillment] = useState<'all' | 'delivery' | 'pickup'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [dueTodayOnly, setDueTodayOnly] = useState(false);
@@ -237,6 +237,7 @@ export default function AdminOrders() {
     switch (status) {
       case 'delivered': return 'status-delivered';
       case 'canceled': return 'status-canceled';
+      case 'ready_for_pickup': return 'status-ready';
       default: return 'status-pending';
     }
   };
@@ -260,13 +261,13 @@ export default function AdminOrders() {
           </div>
 
           <div className="status-selector">
-            {(['all', 'pending', 'delivered', 'canceled'] as const).map(status => (
+            {(['all', 'pending', 'ready_for_pickup', 'delivered', 'canceled'] as const).map(status => (
               <button 
                 key={status}
                 onClick={() => setFilterStatus(status)}
                 className={`status-filter-btn ${filterStatus === status ? 'active' : ''}`}
               >
-                {status}
+                {status === 'ready_for_pickup' ? 'ready' : status}
               </button>
             ))}
             <button
@@ -508,7 +509,9 @@ export default function AdminOrders() {
                   <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
                     {order.status === 'delivered' 
                       ? (order.fulfillmentType === 'pickup' ? 'collected' : 'delivered') 
-                      : order.status}
+                      : order.status === 'ready_for_pickup'
+                        ? 'ready for pickup'
+                        : order.status}
                   </span>
                   <span className={`status-badge fulfillment-tag ${order.fulfillmentType === 'delivery' ? 'is-delivery' : 'is-pickup'}`}>
                     {order.fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup'}
@@ -585,12 +588,21 @@ export default function AdminOrders() {
                       <Download size={14} /> Download Invoice
                     </a>
 
-                    {order.status === 'pending' && (
+                    {(order.status === 'pending' || order.status === 'ready_for_pickup') && (
                       <>
+                        {order.status === 'pending' && order.fulfillmentType === 'pickup' && (
+                          <button 
+                            onClick={() => handleUpdateStatus(order.id, 'ready_for_pickup')}
+                            className="btn btn-action ready"
+                            style={{ marginLeft: 'auto' }}
+                          >
+                            <Check size={14} /> Ready for Pickup
+                          </button>
+                        )}
                         <button 
                           onClick={() => handleUpdateStatus(order.id, 'delivered')}
                           className="btn btn-action fulfill"
-                          style={{ marginLeft: 'auto' }}
+                          style={{ marginLeft: order.status === 'pending' && order.fulfillmentType === 'pickup' ? '0' : 'auto' }}
                         >
                           <Check size={14} /> {order.fulfillmentType === 'pickup' ? 'Collect & Paid' : 'Deliver & Paid'}
                         </button>
@@ -841,6 +853,11 @@ export default function AdminOrders() {
           color: var(--gold-light);
         }
 
+        .status-ready {
+          background-color: rgba(var(--primary-rgb), 0.12);
+          color: var(--primary-color);
+        }
+
         .status-delivered {
           background-color: rgba(64, 145, 108, 0.15);
           color: var(--success-color);
@@ -975,6 +992,15 @@ export default function AdminOrders() {
         .btn-action.fulfill {
           background-color: var(--success-color);
           color: #ffffff;
+        }
+
+        .btn-action.ready {
+          background-color: var(--primary-color);
+          color: #ffffff;
+        }
+
+        .btn-action.ready:hover {
+          background-color: var(--primary-light);
         }
 
         .btn-action.fulfill:hover {

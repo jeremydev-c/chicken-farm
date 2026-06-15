@@ -76,6 +76,7 @@ export default function OrderTracking() {
     switch (status) {
       case 'delivered': return 'status-delivered';
       case 'canceled': return 'status-canceled';
+      case 'ready_for_pickup': return 'status-ready';
       default: return 'status-pending';
     }
   };
@@ -85,7 +86,9 @@ export default function OrderTracking() {
     if (order.fulfillmentType === 'delivery') {
       return order.status === 'delivered' ? 'Delivered' : 'Pending Delivery';
     } else {
-      return order.status === 'delivered' ? 'Collected' : 'Ready for Pickup';
+      if (order.status === 'delivered') return 'Collected';
+      if (order.status === 'ready_for_pickup') return 'Ready for Pickup';
+      return 'Reserved';
     }
   };
 
@@ -219,12 +222,18 @@ export default function OrderTracking() {
                           <span className="step-label">Reserved</span>
                         </div>
                         
-                        <div className={`step-line ${order.status === 'delivered' || order.fulfillmentType === 'pickup' || order.status === 'pending' ? 'completed' : ''}`}></div>
+                        <div className={`step-line ${order.status !== 'canceled' ? 'completed' : ''}`}></div>
                         
                         {/* Step 2 */}
-                        <div className={`step ${order.fulfillmentType === 'delivery' ? (order.status === 'delivered' ? 'completed' : 'active') : 'completed'}`}>
+                        <div className={`step ${
+                          order.fulfillmentType === 'delivery'
+                            ? (order.status === 'delivered' ? 'completed' : 'active')
+                            : (order.status === 'delivered' || order.status === 'ready_for_pickup' ? 'completed' : 'active')
+                        }`}>
                           <div className="step-circle">
-                            {order.fulfillmentType === 'delivery' ? (order.status === 'delivered' ? '✓' : '2') : '✓'}
+                            {order.fulfillmentType === 'delivery'
+                              ? (order.status === 'delivered' ? '✓' : '2')
+                              : (order.status === 'delivered' || order.status === 'ready_for_pickup' ? '✓' : '2')}
                           </div>
                           <span className="step-label">
                             {order.fulfillmentType === 'delivery' ? 'Out for Delivery' : 'Ready at Depot'}
@@ -240,7 +249,11 @@ export default function OrderTracking() {
                             <span className="step-label">Canceled</span>
                           </div>
                         ) : (
-                          <div className={`step ${order.status === 'delivered' ? 'completed' : ''}`}>
+                          <div className={`step ${
+                            order.status === 'delivered'
+                              ? 'completed'
+                              : (order.status === 'ready_for_pickup' ? 'active' : '')
+                          }`}>
                             <div className="step-circle">
                               {order.status === 'delivered' ? '✓' : '3'}
                             </div>
@@ -561,6 +574,11 @@ export default function OrderTracking() {
         .status-pending {
           background-color: rgba(233, 196, 106, 0.15);
           color: var(--gold-light);
+        }
+
+        .status-ready {
+          background-color: rgba(var(--primary-rgb), 0.12);
+          color: var(--primary-color);
         }
 
         .status-delivered {
