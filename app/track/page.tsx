@@ -80,11 +80,12 @@ export default function OrderTracking() {
     }
   };
 
-  const formatStatus = (status: Order['status']) => {
-    switch (status) {
-      case 'delivered': return 'Delivered';
-      case 'canceled': return 'Canceled';
-      default: return 'Pending Pickup';
+  const formatStatus = (order: Order) => {
+    if (order.status === 'canceled') return 'Canceled';
+    if (order.fulfillmentType === 'delivery') {
+      return order.status === 'delivered' ? 'Delivered' : 'Pending Delivery';
+    } else {
+      return order.status === 'delivered' ? 'Collected' : 'Ready for Pickup';
     }
   };
 
@@ -199,7 +200,7 @@ export default function OrderTracking() {
                       
                       <div className="header-badge">
                         <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
-                          {formatStatus(order.status)}
+                          {formatStatus(order)}
                         </span>
                         {order.paymentStatus === 'paid' && (
                           <span className="status-badge payment-paid">Paid Online</span>
@@ -218,8 +219,21 @@ export default function OrderTracking() {
                           <span className="step-label">Reserved</span>
                         </div>
                         
+                        <div className={`step-line ${order.status === 'delivered' || order.fulfillmentType === 'pickup' || order.status === 'pending' ? 'completed' : ''}`}></div>
+                        
+                        {/* Step 2 */}
+                        <div className={`step ${order.fulfillmentType === 'delivery' ? (order.status === 'delivered' ? 'completed' : 'active') : 'completed'}`}>
+                          <div className="step-circle">
+                            {order.fulfillmentType === 'delivery' ? (order.status === 'delivered' ? '✓' : '2') : '✓'}
+                          </div>
+                          <span className="step-label">
+                            {order.fulfillmentType === 'delivery' ? 'Out for Delivery' : 'Ready at Depot'}
+                          </span>
+                        </div>
+                        
                         <div className={`step-line ${order.status === 'delivered' ? 'completed' : ''}`}></div>
                         
+                        {/* Step 3 */}
                         {order.status === 'canceled' ? (
                           <div className="step canceled">
                             <div className="step-circle">✗</div>
@@ -228,9 +242,11 @@ export default function OrderTracking() {
                         ) : (
                           <div className={`step ${order.status === 'delivered' ? 'completed' : ''}`}>
                             <div className="step-circle">
-                              {order.status === 'delivered' ? '✓' : '2'}
+                              {order.status === 'delivered' ? '✓' : '3'}
                             </div>
-                            <span className="step-label">Delivered</span>
+                            <span className="step-label">
+                              {order.fulfillmentType === 'delivery' ? 'Delivered' : 'Collected'}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -241,27 +257,68 @@ export default function OrderTracking() {
                       <div className="customer-info-box">
                         <h4>Pickup/Delivery Contact Details</h4>
                         <div className="info-grid">
-                          <p><User size={14} className="icon" /> {order.customerName}</p>
-                          <p><Phone size={14} className="icon" /> {order.customerPhone}</p>
-                          <p><Mail size={14} className="icon" /> {order.customerEmail}</p>
-                          <p>
-                            {order.fulfillmentType === 'delivery'
-                              ? <Truck size={14} className="icon" />
-                              : <Store size={14} className="icon" />}
-                            {order.fulfillmentType === 'delivery'
-                              ? 'Delivery within Nanyuki'
-                              : 'Pickup at Nanyuki depot'}
-                          </p>
-                          {order.fulfillmentType === 'delivery' && order.deliveryAddress && (
-                            <div>
-                              <p><MapPin size={14} className="icon" /> {order.deliveryAddress}</p>
-                              {typeof order.deliveryLat === 'number' && typeof order.deliveryLng === 'number' && (
-                                <p><a className="map-link" href={`https://www.google.com/maps/search/?api=1&query=${order.deliveryLat},${order.deliveryLng}`} target="_blank" rel="noreferrer">View on map</a></p>
-                              )}
-                            </div>
-                          )}
-                          <p><Calendar size={14} className="icon text-accent" /> <strong>{order.fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup'} Date: {order.pickupDate}</strong></p>
+                          <p><User size={14} className="icon" /> <strong>Customer Name:</strong> {order.customerName}</p>
+                          <p><Phone size={14} className="icon" /> <strong>Phone Number:</strong> {order.customerPhone}</p>
+                          <p><Mail size={14} className="icon" /> <strong>Email:</strong> {order.customerEmail}</p>
+                          <p><Calendar size={14} className="icon text-accent" /> <strong>{order.fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup'} Date:</strong> {order.pickupDate}</p>
                         </div>
+
+                        {order.fulfillmentType === 'pickup' ? (
+                          <div className="depot-info-card">
+                            <h5>🏢 DEPOT COLLECTION DETAILS</h5>
+                            <div className="depot-details">
+                              <p><strong>Pickup Location:</strong> Nanyuki Town Depot</p>
+                              <p><strong>Collection Hours:</strong> Daily 8:00 AM – 7:00 PM</p>
+                              <p><strong>Support Hotline:</strong> <a href="tel:+254722237593" className="depot-hotline">+254 722 237 593</a></p>
+                              <p className="depot-instruction">
+                                💡 <em>Please carry your Reservation ID (<strong>{order.id}</strong>) to present to the storekeeper during pickup.</em>
+                              </p>
+                              <div className="depot-actions">
+                                <a 
+                                  href="https://www.google.com/maps/search/?api=1&query=-0.0163,37.0722" 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="btn-depot-map"
+                                >
+                                  📍 View Depot Location Map
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="delivery-info-card">
+                            <h5>🚚 DELIVERY COORDINATION</h5>
+                            <div className="delivery-details">
+                              <p><strong>Delivery Address:</strong> {order.deliveryAddress || 'No address provided'}</p>
+                              {typeof order.deliveryLat === 'number' && typeof order.deliveryLng === 'number' && (
+                                <div className="mt-2">
+                                  <a 
+                                    href={`https://www.google.com/maps/dir/?api=1&destination=${order.deliveryLat},${order.deliveryLng}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="btn-depot-map"
+                                  >
+                                    📍 Get Directions Map
+                                  </a>
+                                </div>
+                              )}
+                              <p className="depot-instruction">
+                                📞 <em>Our rider will contact you at <strong>{order.customerPhone}</strong> to coordinate final drop-off.</em>
+                              </p>
+                              <div className="mt-2">
+                                <a 
+                                  href={`https://wa.me/${order.customerPhone.replace(/[^0-9]/g, '').startsWith('0') ? '254' + order.customerPhone.replace(/[^0-9]/g, '').substring(1) : order.customerPhone.replace(/[^0-9]/g, '')}`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="btn-whatsapp"
+                                >
+                                  💬 Chat via WhatsApp
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {order.notes && (
                           <div className="notes-box">
                             <strong>Note:</strong> "{order.notes}"
@@ -577,6 +634,18 @@ export default function OrderTracking() {
           color: var(--primary-fg);
         }
 
+        .step.completed .step-circle {
+          background-color: var(--primary-color);
+          color: var(--primary-fg);
+        }
+
+        .step.active .step-circle {
+          background-color: var(--bg-color);
+          border-color: var(--primary-color);
+          color: var(--primary-color);
+          box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2);
+        }
+
         .step.canceled .step-circle {
           background-color: var(--error-color);
           color: #ffffff;
@@ -590,6 +659,10 @@ export default function OrderTracking() {
         }
 
         .step.completed .step-label {
+          color: var(--primary-color);
+        }
+
+        .step.active .step-label {
           color: var(--primary-color);
         }
 
@@ -608,6 +681,83 @@ export default function OrderTracking() {
 
         .step-line.completed {
           background-color: var(--primary-color);
+        }
+
+        .depot-info-card, .delivery-info-card {
+          background-color: rgba(180, 83, 9, 0.03);
+          border: 1px dashed var(--border-color-solid);
+          border-radius: 8px;
+          padding: 1.25rem;
+          margin-top: 1.5rem;
+        }
+
+        .depot-info-card h5, .delivery-info-card h5 {
+          font-family: var(--font-display);
+          color: var(--primary-color);
+          font-size: 0.85rem;
+          margin-bottom: 0.75rem;
+          letter-spacing: 0.05em;
+          font-weight: 700;
+        }
+
+        .depot-details p, .delivery-details p {
+          font-size: 0.85rem;
+          margin-bottom: 0.35rem;
+          color: var(--fg-muted);
+        }
+
+        .depot-hotline {
+          color: var(--primary-color);
+          font-weight: 700;
+          text-decoration: none;
+        }
+
+        .depot-hotline:hover {
+          text-decoration: underline;
+        }
+
+        .depot-instruction {
+          font-size: 0.8rem !important;
+          color: var(--fg-color) !important;
+          background-color: var(--bg-color-secondary);
+          padding: 0.5rem;
+          border-radius: 6px;
+          border-left: 3px solid var(--primary-color);
+        }
+
+        .btn-depot-map {
+          display: inline-block;
+          background-color: var(--bg-color-secondary);
+          color: var(--fg-color);
+          font-size: 0.8rem;
+          font-weight: 600;
+          padding: 0.4rem 0.8rem;
+          border: 1px solid var(--border-color-solid);
+          border-radius: 6px;
+          text-decoration: none;
+          margin-top: 0.5rem;
+          transition: background-color var(--transition-normal);
+        }
+
+        .btn-depot-map:hover {
+          background-color: var(--border-color-solid);
+        }
+
+        .btn-whatsapp {
+          display: inline-block;
+          background-color: #25d366;
+          color: #ffffff;
+          font-size: 0.8rem;
+          font-weight: 600;
+          padding: 0.4rem 0.8rem;
+          border-radius: 6px;
+          text-decoration: none;
+          margin-top: 0.5rem;
+          transition: opacity var(--transition-normal);
+        }
+
+        .btn-whatsapp:hover {
+          opacity: 0.9;
         }
 
         /* Card Body */

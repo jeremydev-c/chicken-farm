@@ -219,12 +219,22 @@ export async function sendOrderConfirmationEmail(order: Order) {
 
   const fulfillmentBadge = isDelivery
     ? `<span style="background-color: #e1effe; color: #1e429f; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">DELIVERY IN NANYUKI</span>`
-    : `<span style="background-color: #edf2f7; color: #4a5568; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">PICKUP AT FARM</span>`;
+    : `<span style="background-color: #edf2f7; color: #4a5568; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; display: inline-block;">DEPOT PICKUP</span>`;
+
+  const subject = isDelivery 
+    ? `🍳 Order Confirmed: Delivery Reservation #${order.id}` 
+    : `🏢 Order Confirmed: Depot Pickup Reservation #${order.id}`;
 
   const contentHtml = `
-    <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #b45309;">Order Confirmed!</h2>
+    <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #b45309;">
+      ${isDelivery ? 'Delivery Reservation Confirmed!' : 'Depot Pickup Confirmed!'}
+    </h2>
     <p style="margin: 0 0 25px 0; font-size: 15px; line-height: 1.6; color: #5c554a;">
-      Hi <strong>${order.customerName}</strong>, thank you for choosing Tabby Premium Eggs. Your reservation has been registered, and we are preparing your Grade AA trays.
+      Hi <strong>${order.customerName}</strong>, thank you for choosing Tabby Premium Eggs. ${
+        isDelivery 
+          ? `Your delivery reservation has been registered and we will dispatch your Grade AA trays to your address on the scheduled date.` 
+          : `Your depot collection reservation has been registered and your Grade AA trays will be ready for pickup at our Nanyuki depot.`
+      }
     </p>
 
     <!-- Details Box -->
@@ -325,7 +335,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
   const html = getEmailWrapper(contentHtml);
   return sendEmail({
     to: order.customerEmail,
-    subject: `🍳 Reservation Confirmed - Order #${order.id}`,
+    subject,
     html,
     attachments,
   });
@@ -456,9 +466,13 @@ export async function sendOrderStatusUpdateEmail(order: Order) {
 
   if (!isDelivered && !isCanceled) return { success: false, error: 'Status is not delivered or canceled.' };
 
-  const subject = isDelivered 
-    ? `🍳 Your Order #${order.id} is Delivered!` 
-    : `❌ Update: Order #${order.id} Canceled`;
+  const isDelivery = order.fulfillmentType === 'delivery';
+
+  const subject = isCanceled 
+    ? `❌ Update: Order #${order.id} Canceled` 
+    : isDelivery
+      ? `🍳 Your Order #${order.id} is Delivered!` 
+      : `🏢 Your Order #${order.id} is Collected!`;
 
   const formattedPickupDate = new Date(order.pickupDate).toLocaleDateString('en-KE', {
     weekday: 'long',
@@ -467,27 +481,39 @@ export async function sendOrderStatusUpdateEmail(order: Order) {
     day: 'numeric',
   });
 
-  const isDelivery = order.fulfillmentType === 'delivery';
-
   let statusHtml = '';
   if (isDelivered) {
-    statusHtml = `
-      <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #166534;">Your Order has been Delivered!</h2>
-      <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #2e2b26;">
-        Hi <strong>${order.customerName}</strong>, great news! Your egg reservation <strong>#${order.id}</strong> has been successfully delivered and processed.
-      </p>
-      
-      <p style="margin: 0 0 20px 0; font-size: 14.5px; line-height: 1.6; color: #5c554a; background-color: #f0fdf4; border-left: 4px solid #166534; padding: 14px; border-radius: 0 8px 8px 0;">
-        ${isDelivery 
-          ? `🚚 <strong>Delivery:</strong> Your order has been delivered to your specified address:<br><span style="display:block; margin-top: 6px; font-weight: bold; color: #2e2b26;">${order.deliveryAddress}</span>`
-          : `🏢 <strong>Depot Pickup:</strong> Your order has been collected from our Nanyuki depot.`
-        }
-      </p>
+    if (isDelivery) {
+      statusHtml = `
+        <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #166534;">Your Order has been Delivered!</h2>
+        <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #2e2b26;">
+          Hi <strong>${order.customerName}</strong>, great news! Your egg reservation <strong>#${order.id}</strong> has been successfully delivered and processed.
+        </p>
+        
+        <p style="margin: 0 0 20px 0; font-size: 14.5px; line-height: 1.6; color: #5c554a; background-color: #f0fdf4; border-left: 4px solid #166534; padding: 14px; border-radius: 0 8px 8px 0;">
+          🚚 <strong>Delivery:</strong> Your order has been delivered to your specified address:<br><span style="display:block; margin-top: 6px; font-weight: bold; color: #2e2b26;">${order.deliveryAddress}</span>
+        </p>
 
-      <p style="margin: 0 0 25px 0; font-size: 14px; color: #5c554a;">
-        Your payment receipt and invoice have been attached to this email as a PDF. Thank you for choosing Tabby Premium Eggs! We appreciate your business and hope to see you again.
-      </p>
-    `;
+        <p style="margin: 0 0 25px 0; font-size: 14px; color: #5c554a;">
+          Your payment receipt and invoice have been attached to this email as a PDF. Thank you for choosing Tabby Premium Eggs! We appreciate your business and hope to see you again.
+        </p>
+      `;
+    } else {
+      statusHtml = `
+        <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #166534;">Your Order has been Collected!</h2>
+        <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #2e2b26;">
+          Hi <strong>${order.customerName}</strong>, great news! Your egg reservation <strong>#${order.id}</strong> has been successfully collected and processed from our depot.
+        </p>
+        
+        <p style="margin: 0 0 20px 0; font-size: 14.5px; line-height: 1.6; color: #5c554a; background-color: #f0fdf4; border-left: 4px solid #166534; padding: 14px; border-radius: 0 8px 8px 0;">
+          🏢 <strong>Depot Collection:</strong> Your order was picked up at our Nanyuki depot.
+        </p>
+
+        <p style="margin: 0 0 25px 0; font-size: 14px; color: #5c554a;">
+          Your payment receipt and invoice have been attached to this email as a PDF. Thank you for choosing Tabby Premium Eggs! We appreciate your business and hope to see you again.
+        </p>
+      `;
+    }
   } else {
     statusHtml = `
       <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 800; color: #991b1b;">Order Canceled</h2>
@@ -523,7 +549,9 @@ export async function sendOrderStatusUpdateEmail(order: Order) {
       </tr>
       <tr>
         <td style="color: #827765;"><strong>Fulfillment Status:</strong></td>
-        <td style="font-weight: 800; color: ${isDelivered ? '#166534' : '#991b1b'}; text-transform: uppercase;">${order.status}</td>
+        <td style="font-weight: 800; color: ${isDelivered ? '#166534' : '#991b1b'}; text-transform: uppercase;">
+          ${isCanceled ? 'CANCELED' : (isDelivery ? 'DELIVERED' : 'COLLECTED')}
+        </td>
       </tr>
     </table>
   `;

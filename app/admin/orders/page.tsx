@@ -12,6 +12,7 @@ export default function AdminOrders() {
 
   // Search & Filter State
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'delivered' | 'canceled'>('all');
+  const [filterFulfillment, setFilterFulfillment] = useState<'all' | 'delivery' | 'pickup'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [dueTodayOnly, setDueTodayOnly] = useState(false);
   const todayStr = new Date().toLocaleDateString('en-CA');
@@ -161,6 +162,7 @@ export default function AdminOrders() {
   // Filter and Search logic
   const filteredOrders = orders.filter(order => {
     const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
+    const matchesFulfillment = filterFulfillment === 'all' || order.fulfillmentType === filterFulfillment;
     
     const term = searchQuery.toLowerCase().trim();
     const matchesSearch = !term || 
@@ -171,7 +173,7 @@ export default function AdminOrders() {
 
     const matchesToday = !dueTodayOnly || order.pickupDate === todayStr;
 
-    return matchesStatus && matchesSearch && matchesToday;
+    return matchesStatus && matchesFulfillment && matchesSearch && matchesToday;
   });
 
   const handleExportCSV = () => {
@@ -273,6 +275,18 @@ export default function AdminOrders() {
             >
               Due Today
             </button>
+          </div>
+
+          <div className="status-selector" style={{ borderLeft: '1px solid var(--border-color-solid)', paddingLeft: '0.75rem' }}>
+            {(['all', 'delivery', 'pickup'] as const).map(type => (
+              <button 
+                key={type}
+                onClick={() => setFilterFulfillment(type)}
+                className={`status-filter-btn ${filterFulfillment === type ? 'active' : ''}`}
+              >
+                {type === 'all' ? 'All Types' : type === 'delivery' ? '🚚 Deliveries' : '🏢 Depot Pickups'}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -492,7 +506,9 @@ export default function AdminOrders() {
 
                 <div className="right-badge">
                   <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
-                    {order.status}
+                    {order.status === 'delivered' 
+                      ? (order.fulfillmentType === 'pickup' ? 'collected' : 'delivered') 
+                      : order.status}
                   </span>
                   <span className={`status-badge fulfillment-tag ${order.fulfillmentType === 'delivery' ? 'is-delivery' : 'is-pickup'}`}>
                     {order.fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup'}
@@ -576,7 +592,7 @@ export default function AdminOrders() {
                           className="btn btn-action fulfill"
                           style={{ marginLeft: 'auto' }}
                         >
-                          <Check size={14} /> Deliver & Paid
+                          <Check size={14} /> {order.fulfillmentType === 'pickup' ? 'Collect & Paid' : 'Deliver & Paid'}
                         </button>
                         <button 
                           onClick={() => handleUpdateStatus(order.id, 'canceled')}

@@ -339,7 +339,13 @@ export default function AdminDashboard() {
                   {order.fulfillmentType === 'delivery' && (
                     <a href={mapsLink(order)} target="_blank" rel="noopener noreferrer" className="contact-btn maps" title="Open in Google Maps" aria-label="Directions"><MapPin size={14} /></a>
                   )}
-                  <button onClick={() => handleUpdateOrderStatus(order.id, 'delivered')} className="action-btn fulfill-btn" title="Mark as Delivered"><Check size={14} /> Deliver</button>
+                  <button 
+                    onClick={() => handleUpdateOrderStatus(order.id, 'delivered')} 
+                    className="action-btn fulfill-btn" 
+                    title={order.fulfillmentType === 'pickup' ? "Mark as Collected" : "Mark as Delivered"}
+                  >
+                    <Check size={14} /> {order.fulfillmentType === 'pickup' ? "Collect" : "Deliver"}
+                  </button>
                 </div>
               </div>
             ))}
@@ -486,9 +492,9 @@ export default function AdminDashboard() {
                         <button 
                           onClick={() => handleUpdateOrderStatus(order.id, 'delivered')}
                           className="action-btn fulfill-btn" 
-                          title="Mark as Delivered & Paid"
+                          title={order.fulfillmentType === 'pickup' ? "Mark as Collected & Paid" : "Mark as Delivered & Paid"}
                         >
-                          <Check size={14} /> Deliver
+                          <Check size={14} /> {order.fulfillmentType === 'pickup' ? "Collect" : "Deliver"}
                         </button>
                         <button 
                           onClick={() => handleUpdateOrderStatus(order.id, 'canceled')}
@@ -500,7 +506,9 @@ export default function AdminDashboard() {
                       </>
                     ) : (
                       <span className={`status-pill ${order.status}`}>
-                        {order.status}
+                        {order.status === 'delivered' 
+                          ? (order.fulfillmentType === 'pickup' ? 'collected' : 'delivered') 
+                          : order.status}
                       </span>
                     )}
                   </div>
